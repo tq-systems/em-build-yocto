@@ -16,9 +16,6 @@ Deploy yocto docker image:
     - .image-docker
     - .gitlab-runner-tag
     - .before-script-docker-login
+    - .rule-include-default-branch-or-tags
   script:
     - make -f docker.mk release
-  rules:
-    - if: >
-        $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-        || $CI_COMMIT_TAG =~ /^v/

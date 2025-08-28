@@ -6,13 +6,19 @@ here. The focus is on building the core image and the cross-compiler toolchain.
 Furthermore, a docker image is created in order to realize further Yocto builds
 with little effort.
 
+## License information
+All files in this project are classified as product-specific software and bound
+to the use with the TQ-Systems GmbH product: EM400
+
+    SPDX-License-Identifier: LicenseRef-TQSPSLA-1.0.3
+
 ## Local layer configuration
 The build can be adapted by a local layer configuration which is already
 introduced by the `em-build` project.
 
 ### Configuration file
 Create a local layer configuration file (e.g. `adapt-em-layers.conf`).
-Set the environment variable `RELPATH_LOCAL_CONF` to the path of the file,
+Set the environment variable `LOCAL_LAYER_CONF` to the path of the file,
 it has to be relative the root directory of the project.
 
 Furthermore this configuration file can be adjusted by the environment variable

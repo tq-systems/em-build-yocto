@@ -1,3 +1,5 @@
 /em-build
-/.env
+/artifacts
+/deploy
 *.tar.gz
+/.env

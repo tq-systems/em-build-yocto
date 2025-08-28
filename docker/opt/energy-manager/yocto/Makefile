@@ -1,45 +1,23 @@
-PATH_EM_YOCTO ?= /opt/energy-manager/yocto
-include $(PATH_EM_YOCTO)/environment.mk
-
+TQEM_OPT_YOCTO_PATH ?= /opt/energy-manager/yocto
+include $(TQEM_OPT_YOCTO_PATH)/environment.mk
 
 # Snapshot
-all: prepare build
+all: prepare
+	$(BUILD_SCRIPT) core-image
+	$(BUILD_SCRIPT) toolchain
 
 prepare: enable-clean-up
-	$(SCRIPT_PREPARE)
+	$(PREPARE_SCRIPT)
 
-build:
-	$(SCRIPT_BUILD) $(TARGET)
-	$(SCRIPT_BUILD) fill-dl-cache
+build: prepare
+	$(BUILD_SCRIPT) $(TARGET)
 
-deploy-artifact:
-	$(SCRIPT_DEPLOY) artifact $(TARGET)
-
-deploy-images:
-	$(SCRIPT_DEPLOY) images $(MACHINE) $(LINK_LIST)
-
-copy-bundle-artifacts:
-	$(SCRIPT_COPY_BUNDLE_ARTIFACTS) $(TARGET) $(TARGET_DIR)
-
-# Release
-release-fetch:
-	$(SCRIPT_RELEASE) fetch
-
-release-build:
-	$(SCRIPT_RELEASE) build
-
-release-deploy:
-	$(SCRIPT_RELEASE) deploy
-
-# A single release job prevents that another job may barge in between
-release: prepare release-fetch release-build release-deploy
-
-release-test:
-	$(SCRIPT_RELEASE) test $(STEP)
+deploy:
+	tqem-copy.sh $(TQEM_ARTIFACTS_PATH) $(TQEM_EMOS_DEPLOY_PATH) --overwrite
 
 # Clean up
-EXEC_CLEAN_BUILD := rm -rf $(DIR_YOCTO_BUILD)
-EXEC_CLEAN_FULL  := rm -rf $(DIR_EM_BUILD)
+EXEC_CLEAN_BUILD := rm -rf $(TQEM_YOCTO_BUILD_DIR)
+EXEC_CLEAN_FULL  := rm -rf $(TQEM_EM_BUILD_DIR)
 
 enable-clean-up:
 ifeq ($(CLEAN_MODE),build)
@@ -55,10 +33,5 @@ clean-build:
 clean:
 	$(EXEC_CLEAN_FULL)
 
-clean-deploy-dir:
-	$(SCRIPT_RELEASE) clean-deploy-dir
-
-.NOTPARRALEL: all release
 .PHONY: all prepare build deploy \
-	release-build release-deploy release release-test \
 	enable-clean-up clean-build clean

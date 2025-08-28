@@ -1,3 +1,5 @@
-.git
-em-build
+/em-build
+/artifacts
+/deploy
 *.tar.gz
+/.git

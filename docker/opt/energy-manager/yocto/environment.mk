@@ -1,76 +1,81 @@
-# Export project root directory
-export PATH_PROJECT_ROOT ?= $(CURDIR)
-
 # The default machine is 'em-aarch64', multi-machine builds are maintained in the CI
-export MACHINES ?= em-aarch64
+export TQEM_MACHINES ?= em-aarch64
 
-# Git
-export GIT_EM_BUILD ?= https://github.com/tq-systems/em-build.git
+# The build time of the em-aarch64 machine can be reduced by setting the explicit
+# em-aarch64 machine (em4xx or em-cb30)
+export TQEM_EM_AARCH64_MACHINE ?=
+
+# em-build git repository
+export TQEM_EM_BUILD_GIT_REPO ?= https://github.com/tq-systems/em-build.git
 
 # The project itself has regular semantic versions.
 # So that the em-build tags can be referenced in this git repository, a git tag
 # convention is introduced. If the tag has the prefix 'em-build_', the git tag
 # of em-build is derived from it.
-ifdef CI_COMMIT_TAG
-  DERIVE_TAG = $(shell echo ${CI_COMMIT_TAG} | grep  ^em-build_ | sed -e 's/em-build_//g')
+
+ifneq ($(strip ${BUILD_TAG}),)
+  DERIVE_TAG = $(shell echo ${BUILD_TAG} | grep  ^em-build_ | sed -e 's/em-build_//g')
   ifneq ($(DERIVE_TAG),)
-    REF_EM_BUILD = $(DERIVE_TAG)
+    TQEM_EM_BUILD_REF = $(DERIVE_TAG)
   endif
 endif
-export REF_EM_BUILD ?= master
+export TQEM_EM_BUILD_REF ?= master
 
 # Directories
-export DIR_EM_BUILD            ?= em-build
-export DIR_YOCTO_BUILD          = $(DIR_EM_BUILD)/build
-export DIR_YOCTO_DOWNLOADS      = $(DIR_YOCTO_BUILD)/downloads
-export DIR_YOCTO_TMP            = $(DIR_YOCTO_BUILD)/tmp
-export DIR_YOCTO_WORK           = $(DIR_YOCTO_TMP)/work
-export DIR_YOCTO_DEPLOY         = $(DIR_YOCTO_TMP)/deploy
-export DIR_YOCTO_DEPLOY_SDK     = $(DIR_YOCTO_DEPLOY)/sdk
-export DIR_YOCTO_DEPLOY_IMAGES  = $(DIR_YOCTO_DEPLOY)/images
-export DIR_YOCTO_DEPLOY_SOURCES = $(DIR_YOCTO_DEPLOY)/sources
-export DIR_YOCTO_DEPLOY_SPDX    = $(DIR_YOCTO_DEPLOY)/spdx
+export TQEM_EM_BUILD_DIR            ?= em-build
+export TQEM_YOCTO_BUILD_DIR          = $(TQEM_EM_BUILD_DIR)/build
+export TQEM_YOCTO_CONF_DIR           = $(TQEM_YOCTO_BUILD_DIR)/conf
+export TQEM_YOCTO_DOWNLOADS_DIR      = $(TQEM_YOCTO_BUILD_DIR)/downloads
+export TQEM_YOCTO_TMP_DIR            = $(TQEM_YOCTO_BUILD_DIR)/tmp
+export TQEM_YOCTO_WORK_DIR           = $(TQEM_YOCTO_TMP_DIR)/work
+export TQEM_YOCTO_DEPLOY_DIR         = $(TQEM_YOCTO_TMP_DIR)/deploy
+export TQEM_YOCTO_DEPLOY_SDK_DIR     = $(TQEM_YOCTO_DEPLOY_DIR)/sdk
+export TQEM_YOCTO_DEPLOY_IMAGES_DIR  = $(TQEM_YOCTO_DEPLOY_DIR)/images
+export TQEM_YOCTO_DEPLOY_SOURCES_DIR = $(TQEM_YOCTO_DEPLOY_DIR)/sources
+export TQEM_YOCTO_DEPLOY_SPDX_DIR    = $(TQEM_YOCTO_DEPLOY_DIR)/spdx
 
-export DIR_SNAPSHOTS = snapshots
-export DIR_RELEASES  = releases
+export TQEM_SNAPSHOTS_DIR ?= snapshots
+export TQEM_RELEASES_DIR  ?= releases
 
-export SUBDIR_REF        ?= $(REF_EM_BUILD)
-export SUBDIR_BUILD_TYPE ?= $(DIR_SNAPSHOTS)
-export SUBDIR_MACHINE_OVERRIDE ?=
+export TQEM_ARTIFACTS_DIR ?= artifacts
+export TQEM_DEPLOY_DIR    ?= deploy
+
+export TQEM_GIT_REF_SUBDIR          ?= $(TQEM_EM_BUILD_REF)
+export TQEM_BUILD_TYPE_SUBDIR       ?= $(TQEM_SNAPSHOTS_DIR)
+export TQEM_MACHINE_OVERRIDE_SUBDIR ?=
 
 # Paths
-export PATH_EM_YOCTO_CONF = $(PATH_EM_YOCTO)/conf
+export TQEM_ADD_CONF_PATH = $(TQEM_OPT_YOCTO_PATH)/conf
 
-# ATTENTION: PATH_BASE_DEPLOY is the base deployment path,
+# ATTENTION: TQEM_BASE_DEPLOY_PATH is the base deployment path,
 # it should be customized according to the user's needs.
-export PATH_BASE_DEPLOY ?= $(HOME)/workspace/deploy
+export TQEM_BASE_DEPLOY_PATH ?= $(HOME)/workspace/tqem/deploy
+export TQEM_EMOS_DEPLOY_PATH ?= $(TQEM_BASE_DEPLOY_PATH)/$(TQEM_BUILD_TYPE_SUBDIR)/emos/$(TQEM_GIT_REF_SUBDIR)
 
-export PATH_EM_BUILD             = $(PATH_PROJECT_ROOT)/$(DIR_EM_BUILD)
-export PATH_YOCTO_BUILD          = $(PATH_PROJECT_ROOT)/$(DIR_YOCTO_BUILD)
-export PATH_YOCTO_DOWNLOADS      = $(PATH_PROJECT_ROOT)/$(DIR_YOCTO_DOWNLOADS)
-export PATH_YOCTO_TMP            = $(PATH_PROJECT_ROOT)/$(DIR_YOCTO_TMP)
-export PATH_YOCTO_WORK           = $(PATH_PROJECT_ROOT)/$(DIR_YOCTO_WORK)
-export PATH_YOCTO_DEPLOY         = $(PATH_PROJECT_ROOT)/$(DIR_YOCTO_DEPLOY)
-export PATH_YOCTO_DEPLOY_SDK     = $(PATH_PROJECT_ROOT)/$(DIR_YOCTO_DEPLOY_SDK)
-export PATH_YOCTO_DEPLOY_IMAGES  = $(PATH_PROJECT_ROOT)/$(DIR_YOCTO_DEPLOY_IMAGES)
-export PATH_YOCTO_DEPLOY_SOURCES = $(PATH_PROJECT_ROOT)/$(DIR_YOCTO_DEPLOY_SOURCES)
-export PATH_YOCTO_DEPLOY_SPDX    = $(PATH_PROJECT_ROOT)/$(DIR_YOCTO_DEPLOY_SPDX)
+export TQEM_ARTIFACTS_PATH            = $(TQEM_YOCTO_PROJECT_PATH)/$(TQEM_ARTIFACTS_DIR)
+export TQEM_EM_BUILD_PATH             = $(TQEM_YOCTO_PROJECT_PATH)/$(TQEM_EM_BUILD_DIR)
+export TQEM_YOCTO_BUILD_PATH          = $(TQEM_YOCTO_PROJECT_PATH)/$(TQEM_YOCTO_BUILD_DIR)
+export TQEM_YOCTO_CONF_PATH           = $(TQEM_YOCTO_PROJECT_PATH)/$(TQEM_YOCTO_CONF_DIR)
+export TQEM_YOCTO_DOWNLOADS_PATH      = $(TQEM_YOCTO_PROJECT_PATH)/$(TQEM_YOCTO_DOWNLOADS_DIR)
+export TQEM_YOCTO_TMP_PATH            = $(TQEM_YOCTO_PROJECT_PATH)/$(TQEM_YOCTO_TMP_DIR)
+export TQEM_YOCTO_WORK_PATH           = $(TQEM_YOCTO_PROJECT_PATH)/$(TQEM_YOCTO_WORK_DIR)
+export TQEM_YOCTO_DEPLOY_PATH         = $(TQEM_YOCTO_PROJECT_PATH)/$(TQEM_YOCTO_DEPLOY_DIR)
+export TQEM_YOCTO_DEPLOY_SDK_PATH     = $(TQEM_YOCTO_PROJECT_PATH)/$(TQEM_YOCTO_DEPLOY_SDK_DIR)
+export TQEM_YOCTO_DEPLOY_IMAGES_PATH  = $(TQEM_YOCTO_PROJECT_PATH)/$(TQEM_YOCTO_DEPLOY_IMAGES_DIR)
+export TQEM_YOCTO_DEPLOY_SOURCES_PATH = $(TQEM_YOCTO_PROJECT_PATH)/$(TQEM_YOCTO_DEPLOY_SOURCES_DIR)
+export TQEM_YOCTO_DEPLOY_SPDX_PATH    = $(TQEM_YOCTO_PROJECT_PATH)/$(TQEM_YOCTO_DEPLOY_SPDX_DIR)
 
-# Enables adding or overriding yocto layer definitions,
-# RELPATH_LOCAL_CONF is relative to the project's root directory
-ifdef RELPATH_LOCAL_CONF
-  export PATH_LOCAL_CONF = $(PATH_PROJECT_ROOT)/$(RELPATH_LOCAL_CONF)
+# Enables adding or overriding yocto layer definitions, LOCAL_LAYER_CONF has to be relative
+# to the project's root directory
+ifdef LOCAL_LAYER_CONF
+  export LOCAL_LAYER_CONF_PATH = $(TQEM_YOCTO_PROJECT_PATH)/$(LOCAL_LAYER_CONF)
 endif
 
-export PATH_LOCAL_YOCTO_CONF ?= $(HOME)/local-yocto-config
+# Enable further local configurations (currently only site.conf)
+export PATH_LOCAL_YOCTO_CONF ?= $(HOME)/.yocto
 
 # Files
-export SCRIPT_PREPARE = prepare.sh
-export SCRIPT_BUILD   = build.sh
-export SCRIPT_DEPLOY  = deploy.sh
-export SCRIPT_COPY_BUNDLE_ARTIFACTS = copy-bundle-artifacts.sh
-export SCRIPT_RELEASE = release.sh
+export PREPARE_SCRIPT               = prepare.sh
+export BUILD_SCRIPT                 = build.sh
 
-# Linking
-export DEPLOY_SYMLINK ?= false
-export DEPLOY_SUFFIX  ?= latest
+export TQEM_YOCTO_LOCAL_CONF        = $(TQEM_YOCTO_CONF_PATH)/local.conf

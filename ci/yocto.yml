@@ -19,7 +19,7 @@
 # this enables a flexible handling of different docker tags
 .yocto-build-image:
   image:
-    name: ${YOCTO_REGISTRY_IMAGE}/build:${YOCTO_DOCKER_TAG}
+    name: ${YOCTO_REGISTRY}/build:${YOCTO_DOCKER_TAG}
     docker:
       user: tqemci
 

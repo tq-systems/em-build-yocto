@@ -1,20 +1,21 @@
-# This Makefile needs to be executable outside the docker container to enable local builds
+# This Makefile is executable inside and outside the docker container
 
-PATH_PROJECT_ROOT = $(CURDIR)
+export TQEM_YOCTO_PROJECT_PATH = $(CURDIR)
+
 # Default path for the Makefile inside the container
-PATH_CHECK = /opt/energy-manager/yocto
+TQEM_DEFAULT_OPT_YOCTO_PATH ?= /opt/energy-manager/yocto
 
-# If PATH_CHECK exists, we are in the container
-ifneq ($(wildcard $(PATH_CHECK)/Makefile),)
-  PATH_EM_YOCTO = $(PATH_CHECK)
+# If "$TQEM_DEFAULT_OPT_YOCTO_PATH/Makefile" exists, we are in the container
+ifneq ($(wildcard $(TQEM_DEFAULT_OPT_YOCTO_PATH)/Makefile),)
+  TQEM_OPT_YOCTO_PATH = $(TQEM_DEFAULT_OPT_YOCTO_PATH)
 else
   # The PATH variable is extended for running the scripts outside the container
-  DIR_BIN = $(PATH_PROJECT_ROOT)/docker/usr/local/bin
-  ifeq ($(findstring $(DIR_BIN),$(PATH)),)
-    export PATH := $(PATH):$(DIR_BIN)
+  BIN_DIR = $(TQEM_YOCTO_PROJECT_PATH)/docker/usr/local/bin
+  ifeq ($(findstring $(BIN_DIR),$(PATH)),)
+    export PATH := $(PATH):$(BIN_DIR)
   endif
 
-  PATH_EM_YOCTO = $(PATH_PROJECT_ROOT)/docker$(PATH_CHECK)
+  TQEM_OPT_YOCTO_PATH = $(TQEM_YOCTO_PROJECT_PATH)/docker$(TQEM_DEFAULT_OPT_YOCTO_PATH)
 endif
 
-include $(PATH_EM_YOCTO)/Makefile
+include $(TQEM_OPT_YOCTO_PATH)/Makefile

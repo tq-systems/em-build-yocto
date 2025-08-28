@@ -1,0 +1,10 @@
+version: '3'
+services:
+  build:
+    build:
+      context: .
+      dockerfile: docker/build.Dockerfile
+      args:
+        - BASE_REGISTRY_IMAGE=${BASE_REGISTRY_IMAGE}
+        - BASE_DOCKER_TAG=${BASE_DOCKER_TAG}
+    image: ${YOCTO_REGISTRY_IMAGE}/build:${YOCTO_DOCKER_TAG}

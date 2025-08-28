@@ -1,0 +1,128 @@
+include:
+- project: tq-em/build/docker/base
+  file: ci/include.yml
+  ref: v2.0.1
+  rules:
+    - if: '$CI_COMMIT_TAG'
+    - if: '$CI_COMMIT_BRANCH =~ /^release/'
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^release/'
+
+- project: tq-em/build/docker/base
+  file: ci/include.yml
+  ref: master
+  rules:
+    - if: '$CI_COMMIT_TAG'
+      when: never
+    - if: '$CI_COMMIT_BRANCH =~ /^release/'
+      when: never
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^release/'
+      when: never
+    - when: always
+
+- local: ci/docker.yml
+- local: ci/yocto.yml
+
+# Common definitions
+stages:
+  - test
+  - build
+  - deploy
+  - toolchain
+
+variables:
+  MACHINES: 'em310 em-aarch64'
+
+.common-yocto-settings:
+  extends:
+    - .gitlab-runner-tag
+    - .image-yocto
+    - .yocto-build-settings
+
+.rule-default-branch-or-force-snapshot:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+      when: never
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+    - if: $FORCE_SNAPSHOT == 'true'
+
+# Test
+Test yocto build from scratch:
+  stage: test
+  extends:
+    - .common-yocto-settings
+    - .rule-include-development-branches
+  variables:
+    SUBDIR_JOB: 'test'
+    BUILD_TARGET: 'libtool-native'
+    BUILD_MACHINES: 'em-aarch64'
+    CLEAN_MODE: 'full'
+  script:
+    - make all TARGET=${BUILD_TARGET} MACHINES=${BUILD_MACHINES}
+
+Gitleaks:
+  extends: .gitleaks
+
+Shell Linter:
+  extends:
+    - .lint-shell
+    - .rule-include-development-branches
+
+# Snapshot
+Build Core-Image and Toolchain Snapshots:
+  stage: build
+  extends:
+    - .common-yocto-settings
+    - .rule-default-branch-or-force-snapshot
+  variables:
+    SUBDIR_JOB: 'snapshot'
+  script:
+    - make prepare
+    - make build TARGET=em-image-core
+    - make build TARGET=toolchain
+
+Deploy Core-Image and Toolchain Snaphots:
+  stage: deploy
+  extends:
+    - .common-yocto-settings
+    - .rule-default-branch-or-force-snapshot
+  variables:
+    SUBDIR_JOB: 'snapshot'
+    OVERRIDE_SNAPSHOTS: 'true'
+  script:
+    - make deploy-artifact TARGET=em-image-core
+    - make deploy-artifact TARGET=toolchain
+
+# Release
+Release - Core-Image and Toolchain:
+  stage: deploy
+  extends:
+    - .common-yocto-settings
+    - .rule-if-tag-with-em-build-prefix
+    - .setup-package-ssh
+  variables:
+    SUBDIR_JOB: 'release'
+    CLEAN_MODE: 'full'
+    RELPATH_LOCAL_CONF: docker/opt/energy-manager/yocto/conf/cyclonedx-layer.conf
+  script:
+    - make release
+
+Release Manual Core-Image and Toolchain:
+  stage: deploy
+  extends:
+    - .common-yocto-settings
+    - .rule-if-tag-with-em-build-prefix
+    - .setup-package-ssh
+  variables:
+    SUBDIR_JOB: 'release'
+  when: manual
+  script:
+    - '[ -n "${CLEAN_DEPLOY_DIR}" ] && make clean-deploy-dir'
+    - make $RELEASE_STEP
+
+Trigger Toolchain Build:
+  stage: toolchain
+  extends:
+    - .rule-include-default-branch
+  trigger:
+    project: tq-em/build/docker/toolchain
+    strategy: depend

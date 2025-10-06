@@ -1,0 +1,21 @@
+# Test the docker build without deployment
+Test docker build:
+  stage: test
+  extends:
+    - .image-docker
+    - .gitlab-runner-tag
+    - .before-script-docker-login
+    - .rule-include-development-branches
+  script:
+    - make -f docker.mk all
+
+# Build and deploy the docker image for the default branch or tags
+Deploy yocto docker image:
+  stage: deploy
+  extends:
+    - .image-docker
+    - .gitlab-runner-tag
+    - .before-script-docker-login
+    - .rule-include-default-branch-or-tags
+  script:
+    - make -f docker.mk release

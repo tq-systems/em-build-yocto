@@ -1,0 +1,5 @@
+/em-build
+/artifacts
+/deploy
+*.tar.gz
+/.git

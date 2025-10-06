@@ -1,0 +1,29 @@
+.yocto-build-settings:
+  variables:
+    # 'tq-em-yocto' is a dedicated gitlab-runner for yocto builds
+    # 'tq-em-yocto-fast' is a fast gitlab-runner for yocto builds with a dl-cache
+    GITLAB_RUNNER_TAG: 'tq-em-yocto-fast'
+    # ​Prevent git-clean from deleting the em-build folder
+    GIT_CLEAN_FLAGS: -ffd
+    # Use subfolders for the different build jobs
+    GIT_CLONE_PATH: "$CI_BUILDS_DIR/$CI_PROJECT_PATH/$SUBDIR_JOB"
+
+.setup-package-ssh:
+  before_script:
+    - eval $(ssh-agent -s)
+    - cat "$PACKAGES_RSA_KEY" | base64 -d | ssh-add -
+    - mkdir ~/.ssh && chmod 700 ~/.ssh
+    - echo "$TQ_EM_PACKAGES_SSH_CONFIG" > ~/.ssh/config
+
+# YOCTO_DOCKER_TAG have to be defined where this template is extended,
+# this enables a flexible handling of different docker tags
+.yocto-build-image:
+  image:
+    name: ${YOCTO_REGISTRY}/build:${YOCTO_DOCKER_TAG}
+    docker:
+      user: tqemci
+
+# Release builds of em-build are triggered by tags with the prefix 'em-build_'
+.rule-if-tag-with-em-build-prefix:
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^em-build_/

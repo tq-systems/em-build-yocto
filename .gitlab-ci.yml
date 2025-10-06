@@ -1,0 +1,70 @@
+include:
+- project: tq-em/public/build/base
+  file: ci/include.yml
+  ref: main
+  rules:
+- local: ci/docker.yml
+- local: ci/yocto.yml
+
+# Common definitions
+stages:
+  - test
+  - build
+  - deploy
+  - toolchain
+
+variables:
+  TQEM_MACHINES: 'em310 em-aarch64'
+  BASE_DOCKER_TAG: 'next'
+
+.artifacts-one-day:
+  artifacts:
+    name: ${CI_PROJECT_NAME}_${CI_COMMIT_SHORT_SHA}
+    expire_in: 1 day
+    paths:
+      - artifacts
+
+.common-yocto-settings:
+  extends:
+    - .gitlab-runner-tag
+    - .image-yocto
+    - .yocto-build-settings
+
+.rule-default-branch-or-force-snapshot:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+      when: never
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+    - if: $FORCE_SNAPSHOT == 'true'
+
+# Test
+Test yocto build from scratch:
+  stage: test
+  extends:
+    - .common-yocto-settings
+    - .rule-include-development-branches
+  variables:
+    SUBDIR_JOB: 'test'
+    CLEAN_MODE: 'full'
+  script:
+    - make build TARGET=libtool-native TQEM_MACHINES=em-aarch64
+
+Gitleaks:
+  extends: .gitleaks
+
+Shell Linter:
+  extends:
+    - .lint-shell
+    - .rule-include-development-branches
+
+# Snapshot
+Build Core-Image and Toolchain Snapshots:
+  stage: build
+  extends:
+    - .common-yocto-settings
+    - .rule-default-branch-or-force-snapshot
+    - .artifacts-one-day
+  variables:
+    SUBDIR_JOB: 'snapshot'
+  script:
+    - make all

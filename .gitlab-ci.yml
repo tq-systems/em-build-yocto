@@ -68,3 +68,16 @@ Build Core-Image and Toolchain Snapshots:
     SUBDIR_JOB: 'snapshot'
   script:
     - make all
+
+# Deployment
+Deploy Snapshots:
+  stage: deploy
+  extends:
+    - .image-ubuntu
+    - .rule-default-branch-or-force-snapshot
+  variables:
+    SUBDIR_JOB: 'snapshot'
+  script:
+    - make deploy
+  tags:
+    - tqem-deploy-snapshots

@@ -1,5 +1,1 @@
 ## [{{ version }}]
-### Changed
-- Ensure a tagged base-ci during release builds
-- Deploy CVE json file
-- Replace base-ci with base

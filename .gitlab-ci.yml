@@ -81,3 +81,12 @@ Deploy Snapshots:
     - make deploy
   tags:
     - tqem-deploy-snapshots
+
+# Toolchain
+Trigger Toolchain Build:
+  stage: toolchain
+  extends:
+    - .rule-default-branch-or-force-snapshot
+  trigger:
+    project: tq-em/public/build/toolchain
+    strategy: depend

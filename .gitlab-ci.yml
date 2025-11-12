@@ -45,7 +45,7 @@ Test yocto build from scratch:
     - .rule-include-development-branches
   variables:
     SUBDIR_JOB: 'test'
-    CLEAN_MODE: 'full'
+    CLEAN_MODE: 'build'
   script:
     - make build TARGET=libtool-native TQEM_MACHINES=em-aarch64
 

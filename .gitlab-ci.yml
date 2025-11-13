@@ -29,6 +29,7 @@ variables:
     - .gitlab-runner-tag
     - .image-yocto
     - .yocto-build-settings
+  resource_group: ${CI_PROJECT_PATH}-${SUBDIR_JOB}
 
 .rule-default-branch-or-force-snapshot:
   rules:

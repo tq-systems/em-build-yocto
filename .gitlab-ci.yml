@@ -17,18 +17,12 @@ variables:
   TQEM_MACHINES: 'em310 em-aarch64'
   BASE_DOCKER_TAG: 'next'
 
-.artifacts-one-day:
-  artifacts:
-    name: ${CI_PROJECT_NAME}_${CI_COMMIT_SHORT_SHA}
-    expire_in: 1 day
-    paths:
-      - artifacts
-
 .common-yocto-settings:
   extends:
     - .gitlab-runner-tag
     - .image-yocto
     - .yocto-build-settings
+  resource_group: ${CI_PROJECT_PATH}-${SUBDIR_JOB}
 
 .rule-default-branch-or-force-snapshot:
   rules:
@@ -45,7 +39,7 @@ Test yocto build from scratch:
     - .rule-include-development-branches
   variables:
     SUBDIR_JOB: 'test'
-    CLEAN_MODE: 'full'
+    CLEAN_MODE: 'build'
   script:
     - make build TARGET=libtool-native TQEM_MACHINES=em-aarch64
 
@@ -58,26 +52,22 @@ Shell Linter:
     - .rule-include-development-branches
 
 # Snapshot
-Build Core-Image and Toolchain Snapshots:
+Build and Deploy Core Snapshots:
   stage: build
   extends:
     - .common-yocto-settings
     - .rule-default-branch-or-force-snapshot
-    - .artifacts-one-day
   variables:
     SUBDIR_JOB: 'snapshot'
-  script:
-    - make all
+  script: |
+    make all
+    [ "$SKIP_DEPLOYMENT" != 'true' ] && make deploy
 
-# Deployment
-Deploy Snapshots:
-  stage: deploy
+# Toolchain
+Trigger Toolchain Build:
+  stage: toolchain
   extends:
-    - .image-ubuntu
     - .rule-default-branch-or-force-snapshot
-  variables:
-    SUBDIR_JOB: 'snapshot'
-  script:
-    - make deploy
-  tags:
-    - tqem-deploy-snapshots
+  trigger:
+    project: tq-em/public/build/toolchain
+    strategy: depend

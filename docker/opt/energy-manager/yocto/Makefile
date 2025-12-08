@@ -12,8 +12,21 @@ prepare: enable-clean-up
 build: prepare
 	$(BUILD_SCRIPT) $(TARGET)
 
-deploy:
+snapshot-deploy:
 	tqem-copy.sh $(TQEM_ARTIFACTS_PATH) $(TQEM_EMOS_DEPLOY_PATH) --overwrite
+
+release-prepare: prepare
+	$(RELEASE_SCRIPT) fetch
+
+release: release-prepare
+	$(RELEASE_SCRIPT) build
+	$(RELEASE_SCRIPT) collect
+
+release-deploy:
+	tqem-copy-safe.sh $(TQEM_ARTIFACTS_PATH) $(TQEM_EMOS_DEPLOY_PATH)
+
+release-test:
+	$(RELEASE_SCRIPT) test $(FUNCTION)
 
 # Clean up
 EXEC_CLEAN_ARTIFACTS := rm -rf $(TQEM_ARTIFACTS_DIR)

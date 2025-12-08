@@ -3,7 +3,7 @@ export TQEM_MACHINES ?= em-aarch64
 
 # The build time of the em-aarch64 machine can be reduced by setting the explicit
 # em-aarch64 machine (em4xx or em-cb30)
-export TQEM_EM_AARCH64_MACHINE ?=
+export TQEM_EM_AARCH64_MACHINE ?= em4xx
 
 # em-build git repository
 export TQEM_EM_BUILD_GIT_REPO ?= https://github.com/tq-systems/em-build.git
@@ -77,5 +77,6 @@ export PATH_LOCAL_YOCTO_CONF ?= $(HOME)/.yocto
 # Files
 export PREPARE_SCRIPT               = prepare.sh
 export BUILD_SCRIPT                 = build.sh
+export RELEASE_SCRIPT               = release.sh
 
 export TQEM_YOCTO_LOCAL_CONF        = $(TQEM_YOCTO_CONF_PATH)/local.conf

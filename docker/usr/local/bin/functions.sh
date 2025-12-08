@@ -4,6 +4,9 @@
 # shellcheck source=/dev/null
 . /usr/local/lib/tqem/shell/log.sh
 
+# Some variables may be unset
+set +u
+
 LOCAL_LAYER_DIR="local"
 LOCAL_LAYER_CONF="$LOCAL_LAYER_DIR/em-layers.conf"
 
@@ -148,4 +151,29 @@ archive_bootloaders() {
 			-chf "em-image-core-${suffix}.bootloader.tar" ${BOOTLOADERS[$machine]}
 	)
 	ln -sf "em-image-core-${suffix}.bootloader.tar" "${TQEM_YOCTO_DEPLOY_IMAGES_PATH}/${machine}/em-image-core-${machine}.bootloader.tar"
+}
+
+sync_downloads_to_dlcache () {
+	local dl_dir="$1"
+	local source_mirror_url="$2"
+
+	[ -n "$dl_dir" ] || tqem_log_error_and_exit "Missing DL_DIR"
+	[ -n "$source_mirror_url" ] || tqem_log_error_and_exit "Missing SOURCE_MIRROR_URL"
+	[ ! -d "${source_mirror_url}" ] && tqem_log_error_and_exit "Cannot find source mirror: $source_mirror_url"
+
+	tqem_log_info "Copy tarballs from $dl_dir to $source_mirror_url ..."
+	# search for newly downloaded files, links point to mounted
+	# SOURCE_MIRROR_URL. *.done files are only state info
+	find "${dl_dir}" -maxdepth 1 -type f -readable -not -name "*.done" -print0 | \
+	xargs --null --no-run-if-empty cp --update=none -v --target-directory="${source_mirror_url}/"
+
+	# uninative normally consists of one file, so the loop should
+	# be no problem here
+	cd "${dl_dir}" || return 0
+	files=$(find uninative -maxdepth 2 -type f -readable -not -name "*.done" || true)
+	for f in ${files}; do
+		dir=$(dirname "${f}")
+		mkdir -p "${source_mirror_url}/${dir}"
+		cp --update=none -v "${f}" "${source_mirror_url}/${dir}"
+	done
 }

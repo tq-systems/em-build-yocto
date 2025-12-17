@@ -60,6 +60,7 @@ Build and Deploy Core Snapshots:
   variables:
     SUBDIR_JOB: 'snapshot'
   script: |
+    make clean-artifacts
     make all
     [ "$SKIP_DEPLOYMENT" != 'true' ] && make deploy
 

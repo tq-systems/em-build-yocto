@@ -16,6 +16,7 @@ deploy:
 	tqem-copy.sh $(TQEM_ARTIFACTS_PATH) $(TQEM_EMOS_DEPLOY_PATH) --overwrite
 
 # Clean up
+EXEC_CLEAN_ARTIFACTS := rm -rf $(TQEM_ARTIFACTS_DIR)
 EXEC_CLEAN_BUILD := rm -rf $(TQEM_YOCTO_BUILD_DIR)
 EXEC_CLEAN_FULL  := rm -rf $(TQEM_EM_BUILD_DIR)
 
@@ -26,6 +27,9 @@ endif
 ifeq ($(CLEAN_MODE),full)
 	$(EXEC_CLEAN_FULL)
 endif
+
+clean-artifacts:
+	$(EXEC_CLEAN_ARTIFACTS)
 
 clean-build:
 	$(EXEC_CLEAN_BUILD)

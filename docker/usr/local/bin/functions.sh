@@ -4,8 +4,8 @@
 # shellcheck source=/dev/null
 . /usr/local/lib/tqem/shell/log.sh
 
-LOCAL_LAYER_DIR="local"
-LOCAL_LAYER_CONF="$LOCAL_LAYER_DIR/em-layers.conf"
+SUPPLEMENTAL_LAYER_CONF_DIR="local"
+SUPPLEMENTAL_LAYER_CONF_PATH="$SUPPLEMENTAL_LAYER_CONF_DIR/em-layers.conf"
 
 declare -A BOOTLOADERS
 BOOTLOADERS[em310]='u-boot.sb-em310'
@@ -25,32 +25,38 @@ setup_em_build() {
 }
 
 handle_local_layer_conf() {
-	# Copy the static layer configuration file if it exists
-	if [ -e "$LOCAL_LAYER_CONF_PATH" ]; then
-		mkdir -p "$LOCAL_LAYER_DIR"
-		cp -f "$LOCAL_LAYER_CONF_PATH" "$LOCAL_LAYER_CONF"
+	# Copy an additional layerconfig to be the supplemental config file
+	if [ -e "$ADD_LAYER_CONF_PATH" ]; then
+		mkdir -p "$SUPPLEMENTAL_LAYER_CONF_DIR"
+		cp -f "$ADD_LAYER_CONF_PATH" "$SUPPLEMENTAL_LAYER_CONF_PATH"
 	fi
 
-	# Create a variable layer configuration, it can override the static one
-	if [ -n "$OVERRIDE_LOCAL_CONF" ]; then
-		mkdir -p "$LOCAL_LAYER_DIR"
-		echo "$OVERRIDE_LOCAL_CONF" > "$LOCAL_LAYER_CONF"
+	# REPLACE the supplemental config file with the contents from a variable
+	if [ -n "$OVERRIDE_LAYER_CONF_VAR" ]; then
+		mkdir -p "$SUPPLEMENTAL_LAYER_CONF_DIR"
+		echo "$OVERRIDE_LAYER_CONF_VAR" > "$SUPPLEMENTAL_LAYER_CONF_PATH"
 	fi
 
-	# Append a variable layer configuration to the static one
-	if [ -n "$ADD_LOCAL_CONF" ] && [ -e "$LOCAL_LAYER_CONF_PATH" ]; then
-		echo "$ADD_LOCAL_CONF" >> "$LOCAL_LAYER_CONF"
+	# APPEND to the supplemental config file the contents from a variable
+	if [ -n "$APPEND_LAYER_CONF_VAR" ]; then
+		mkdir -p "$SUPPLEMENTAL_LAYER_CONF_DIR"
+		echo "$APPEND_LAYER_CONF_VAR" >> "$SUPPLEMENTAL_LAYER_CONF_PATH"
 	fi
 
-	# Clean up old local layer configurations
-	if [ -e "$LOCAL_LAYER_CONF" ] && \
-		[ ! -e "$LOCAL_LAYER_CONF_PATH" ] && [ -z "$OVERRIDE_LOCAL_CONF" ]; then
-		rm -rf "$LOCAL_LAYER_DIR"
+	# When the supplemental directory exists, but there is no variable defined
+	# that lead to its creation:
+	# - no ADD_LAYER_CONF_PATH
+	# - no OVERRIDE_LAYER_CONF_VAR as a replacement
+	# - no APPEND_LAYER_CONF_VAR to append to the supplemental layer conf
+	# then remove the supplemental directory
+	if [ -d "$SUPPLEMENTAL_LAYER_CONF_DIR" ] && [ ! -e "$ADD_LAYER_CONF_PATH" ] && \
+	   [ -z "$OVERRIDE_LAYER_CONF_VAR" ] && [ -z "$APPEND_LAYER_CONF_VAR" ]; then
+		rm -rf "$SUPPLEMENTAL_LAYER_CONF_DIR"
 	fi
 
-	if [ -e "$LOCAL_LAYER_CONF" ]; then
-		tqem_log_info "Found local layer configuration:"
-		cat "$LOCAL_LAYER_CONF"
+	if [ -e "$SUPPLEMENTAL_LAYER_CONF_PATH" ]; then
+		tqem_log_info "Found appending local layer configuration:"
+		cat "$SUPPLEMENTAL_LAYER_CONF_PATH"
 	else
 		tqem_log_info "No local layer configuration found"
 	fi

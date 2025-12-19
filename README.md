@@ -104,6 +104,8 @@ export PATH_LOCAL_YOCTO_CONF="$HOME/.yocto"
 ```
 
 ### Local Layer Configuration
+The local layer configuration is a file that provides an additional set of Yocto layers
+that is appended to the internal static set of em-layers.conf.
 
 #### Method 1: Configuration File
 Create a local layer configuration file:
@@ -120,19 +122,21 @@ meta-custom_branch = master
 EOF
 
 # Set environment variable
-export LOCAL_LAYER_CONF="adapt-em-layers.conf"
+export ADD_LAYER_CONF_FILE="adapt-em-layers.conf"
 ```
 
-#### Method 2: Environment Variable
+#### Method 2: Override (Existing) Configuration via Environment Variable
 ```bash
-export OVERRIDE_LOCAL_CONF="LAYERS += meta-custom
+export OVERRIDE_LAYER_CONF_VAR="LAYERS += meta-custom
 meta-custom_repo = https://github.com/example/meta-custom.git
 meta-custom_branch = main"
 ```
 
-#### Method 3: Append to Existing
+#### Method 3: Append To Existing Local Layer Configuration via Environment Variable
 ```bash
-export ADD_LOCAL_CONF="EXTRA_IMAGE_FEATURES += \"debug-tweaks\""
+export APPEND_LAYER_CONF_VAR="LAYERS += meta-additional
+meta-additional_repo = https://github.com/additional-layer/meta-additional.git
+meta-additional_branch = custom"
 ```
 
 ### Site Configuration

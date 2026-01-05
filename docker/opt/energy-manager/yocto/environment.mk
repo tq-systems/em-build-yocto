@@ -65,10 +65,11 @@ export TQEM_YOCTO_DEPLOY_IMAGES_PATH  = $(TQEM_YOCTO_PROJECT_PATH)/$(TQEM_YOCTO_
 export TQEM_YOCTO_DEPLOY_SOURCES_PATH = $(TQEM_YOCTO_PROJECT_PATH)/$(TQEM_YOCTO_DEPLOY_SOURCES_DIR)
 export TQEM_YOCTO_DEPLOY_SPDX_PATH    = $(TQEM_YOCTO_PROJECT_PATH)/$(TQEM_YOCTO_DEPLOY_SPDX_DIR)
 
-# Enables adding or overriding yocto layer definitions, LOCAL_LAYER_CONF has to be relative
-# to the project's root directory
-ifdef LOCAL_LAYER_CONF
-  export LOCAL_LAYER_CONF_PATH = $(TQEM_YOCTO_PROJECT_PATH)/$(LOCAL_LAYER_CONF)
+# ADD_LAYER_CONF_FILE is a file that provides an additional set of Yocto layers
+# that is appended to the internal static set of em-layers.conf
+# ADD_LAYER_CONF_PATH is determined relative to this project's root directory
+ifdef ADD_LAYER_CONF_FILE
+  export ADD_LAYER_CONF_PATH = $(shell realpath --relative-to=$(TQEM_YOCTO_PROJECT_PATH) $(ADD_LAYER_CONF_FILE))
 endif
 
 # Enable further local configurations (currently only site.conf)

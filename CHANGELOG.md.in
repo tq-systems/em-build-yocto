@@ -1,1 +1,3 @@
 ## [{{ version }}]
+### Changed
+- handle_local_layer_conf: improved descriptive variable names

@@ -62,7 +62,30 @@ Build and Deploy Core Snapshots:
   script: |
     make clean-artifacts
     make all
-    [ "$SKIP_DEPLOYMENT" != 'true' ] && make deploy
+    [ "$SKIP_DEPLOYMENT" != 'true' ] && make snapshot-deploy
+
+# Release
+Release - Core-Image and Toolchain:
+  stage: build
+  extends:
+    - .common-yocto-settings
+    - .rule-if-tag-with-em-build-prefix
+  variables:
+    SUBDIR_JOB: 'release'
+    CLEAN_MODE: 'full'
+  script:
+    - make release
+
+Deploy Core-Image and Toolchain Release:
+  stage: deploy
+  extends:
+    - .common-yocto-settings
+    - .rule-if-tag-with-em-build-prefix
+  variables:
+    SUBDIR_JOB: 'release'
+  script:
+    - make mirror
+    - make release-deploy
 
 # Toolchain
 Trigger Toolchain Build:

@@ -10,7 +10,7 @@ YOCTO_REGISTRY ?= ${LOCAL_YOCTO}
 
 # Default strings for dependent base image(s)
 BASE_REGISTRY ?= local/em/base
-BASE_TAG ?= latest
+BASE_DOCKER_TAG ?= latest
 
 # The if-clause also applies if an empty string is set in CI pipelines
 ifeq ($(strip ${BUILD_TAG}),)
@@ -27,7 +27,7 @@ DOCKER_COMPOSE_ENV = .env
 
 export define DOCKER_COMPOSE_ENV_CONTENT
 BASE_REGISTRY=${BASE_REGISTRY}
-BASE_TAG=${BASE_TAG}
+BASE_DOCKER_TAG=${BASE_DOCKER_TAG}
 YOCTO_REGISTRY=${YOCTO_REGISTRY}
 BUILD_TAG=${BUILD_TAG}
 endef

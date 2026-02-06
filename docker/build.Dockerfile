@@ -8,3 +8,6 @@ FROM ${BASE_REGISTRY}/yocto:${BASE_DOCKER_TAG}
 
 COPY ./docker/usr/local/bin /usr/local/bin
 COPY ./docker/opt/energy-manager /opt/energy-manager
+
+ARG DOCKER_USER
+USER ${DOCKER_USER}

@@ -7,4 +7,5 @@ services:
       args:
         - BASE_REGISTRY=${BASE_REGISTRY}
         - BASE_DOCKER_TAG=${BASE_DOCKER_TAG}
+        - DOCKER_USER=${DOCKER_USER}
     image: ${YOCTO_REGISTRY}/build:${BUILD_TAG}

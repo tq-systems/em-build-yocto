@@ -1,8 +1,29 @@
 include:
 - project: tq-em/public/build/base
   file: ci/include.yml
+  ref: v2.0.3
+  rules:
+    - if: '$BASE_CI_REF'
+      when: never
+    - if: '$CI_COMMIT_TAG'
+    - if: '$CI_COMMIT_BRANCH =~ /^release/ || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^release/'
+
+- project: tq-em/public/build/base
+  file: ci/include.yml
   ref: main
   rules:
+    - if: '$BASE_CI_REF || $CI_COMMIT_TAG'
+      when: never
+    - if: '$CI_COMMIT_BRANCH =~ /^release/ || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^release/'
+      when: never
+    - when: always
+
+- project: tq-em/public/build/base
+  file: ci/include.yml
+  ref: $BASE_CI_REF
+  rules:
+    - if: '$BASE_CI_REF'
+
 - local: ci/docker.yml
 - local: ci/yocto.yml
 
@@ -15,14 +36,6 @@ stages:
 
 variables:
   TQEM_MACHINES: 'em310 em-aarch64'
-  BASE_DOCKER_TAG: 'next'
-
-.common-yocto-settings:
-  extends:
-    - .gitlab-runner-tag
-    - .image-yocto
-    - .yocto-build-settings
-  resource_group: ${CI_PROJECT_PATH}-${SUBDIR_JOB}
 
 .rule-default-branch-or-force-snapshot:
   rules:
@@ -40,8 +53,9 @@ Test yocto build from scratch:
   variables:
     SUBDIR_JOB: 'test'
     CLEAN_MODE: 'build'
+    YOCTO_RECIPE: 'libtool-native'
   script:
-    - make build TARGET=libtool-native TQEM_MACHINES=em-aarch64
+    - make build TARGET=${YOCTO_RECIPE} TQEM_MACHINES=em-aarch64
 
 Gitleaks:
   extends: .gitleaks
@@ -65,7 +79,7 @@ Build and Deploy Core Snapshots:
     [ "$SKIP_DEPLOYMENT" != 'true' ] && make snapshot-deploy
 
 # Release
-Release - Core-Image and Toolchain:
+Build Core-Image and Toolchain Release:
   stage: build
   extends:
     - .common-yocto-settings

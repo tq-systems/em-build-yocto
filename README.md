@@ -176,7 +176,7 @@ make -f docker.mk clean
 # Docker registry settings
 export YOCTO_REGISTRY="registry.example.com/em"
 export BASE_REGISTRY="registry.example.com/em/base"
-export BASE_TAG="latest"
+export BASE_DOCKER_TAG="latest"
 export BUILD_TAG="v1.0.0"
 ```
 

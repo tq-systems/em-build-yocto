@@ -1,4 +1,7 @@
-.yocto-build-settings:
+.common-yocto-settings:
+  extends:
+    - .gitlab-runner-tag
+    - .image-yocto
   variables:
     # 'tq-em-yocto' is a dedicated gitlab-runner for yocto builds
     # 'tq-em-yocto-fast' is a fast gitlab-runner for yocto builds with a dl-cache
@@ -7,6 +10,8 @@
     GIT_CLEAN_FLAGS: -ffd
     # Use subfolders for the different build jobs
     GIT_CLONE_PATH: "$CI_BUILDS_DIR/$CI_PROJECT_PATH/$SUBDIR_JOB"
+  # Prevent concurrent build jobs from interfering with each other
+  resource_group: ${CI_PROJECT_PATH}-${SUBDIR_JOB}
 
 .setup-package-ssh:
   before_script:

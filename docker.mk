@@ -37,6 +37,8 @@ endef
 
 DOCKER_COMPOSE := docker compose $(COMPOSE_FILE)
 
+MAKE_DOCKER := $(MAKE) -f docker.mk
+
 all: prepare
 	${DOCKER_COMPOSE} build ${BUILD_ARGS} ${IMAGE}
 
@@ -61,7 +63,7 @@ clean:
 	docker system prune -f
 
 release: all
-	$(MAKE) push
-	$(MAKE) clean
+	$(MAKE_DOCKER) push
+	$(MAKE_DOCKER) clean
 
 .PHONY: all prepare push pull clean release

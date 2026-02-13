@@ -7,6 +7,7 @@ all: prepare
 	$(BUILD_SCRIPT) toolchain
 
 prepare: enable-clean-up
+	$(EXEC_CLEAN_ARTIFACTS)
 	$(PREPARE_SCRIPT)
 
 build: prepare
@@ -32,7 +33,7 @@ mirror:
 	$(RELEASE_SCRIPT) mirror
 
 # Clean up
-EXEC_CLEAN_ARTIFACTS := rm -rf $(TQEM_ARTIFACTS_DIR)
+EXEC_CLEAN_ARTIFACTS := rm -rf $(TQEM_ARTIFACTS_DIR) $(TQEM_DEPLOY_DIR)
 EXEC_CLEAN_BUILD := rm -rf $(TQEM_YOCTO_BUILD_DIR)
 EXEC_CLEAN_FULL  := rm -rf $(TQEM_EM_BUILD_DIR)
 

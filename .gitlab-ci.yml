@@ -1,31 +1,8 @@
+---
+# base ci reference is maintained in ci/include.yml, it enables simple includes
+# from other yocto projects
 include:
-- project: tq-em/public/build/base
-  file: ci/include.yml
-  ref: v2.0.3
-  rules:
-    - if: '$BASE_CI_REF'
-      when: never
-    - if: '$CI_COMMIT_TAG'
-    - if: '$CI_COMMIT_BRANCH =~ /^release/ || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^release/'
-
-- project: tq-em/public/build/base
-  file: ci/include.yml
-  ref: main
-  rules:
-    - if: '$BASE_CI_REF || $CI_COMMIT_TAG'
-      when: never
-    - if: '$CI_COMMIT_BRANCH =~ /^release/ || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^release/'
-      when: never
-    - when: always
-
-- project: tq-em/public/build/base
-  file: ci/include.yml
-  ref: $BASE_CI_REF
-  rules:
-    - if: '$BASE_CI_REF'
-
-- local: ci/docker.yml
-- local: ci/yocto.yml
+- local: ci/include.yml
 
 # Common definitions
 stages:
@@ -48,7 +25,7 @@ variables:
 Test yocto build from scratch:
   stage: test
   extends:
-    - .common-yocto-settings
+    - .internal-yocto-settings
     - .rule-include-development-branches
   variables:
     SUBDIR_JOB: 'test'
@@ -69,7 +46,7 @@ Shell Linter:
 Build and Deploy Core Snapshots:
   stage: build
   extends:
-    - .common-yocto-settings
+    - .internal-yocto-settings
     - .rule-default-branch-or-force-snapshot
   variables:
     SUBDIR_JOB: 'snapshot'
@@ -82,7 +59,7 @@ Build and Deploy Core Snapshots:
 Build Core-Image and Toolchain Release:
   stage: build
   extends:
-    - .common-yocto-settings
+    - .internal-yocto-settings
     - .rule-if-tag-with-em-build-prefix
   variables:
     SUBDIR_JOB: 'release'
@@ -93,13 +70,36 @@ Build Core-Image and Toolchain Release:
 Deploy Core-Image and Toolchain Release:
   stage: deploy
   extends:
-    - .common-yocto-settings
+    - .internal-yocto-settings
     - .rule-if-tag-with-em-build-prefix
   variables:
     SUBDIR_JOB: 'release'
   script:
     - make mirror
     - make release-deploy
+
+# Docker builds
+# Test the docker build without deployment
+Test docker build:
+  stage: test
+  extends:
+    - .image-docker
+    - .gitlab-runner-tag
+    - .before-script-docker-login
+    - .rule-include-development-branches
+  script:
+    - make -f docker.mk all
+
+# Build and deploy the docker image for the default branch or tags
+Deploy yocto docker image:
+  stage: deploy
+  extends:
+    - .image-docker
+    - .gitlab-runner-tag
+    - .before-script-docker-login
+    - .rule-include-default-branch-or-tags
+  script:
+    - make -f docker.mk release
 
 # Toolchain
 Trigger Toolchain Build:

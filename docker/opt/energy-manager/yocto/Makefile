@@ -16,8 +16,12 @@ prepare: enable-clean-up
 build: prepare
 	$(BUILD_SCRIPT) $(TARGET)
 
+bundle: prepare
+	env BUNDLE_RECIPE=$(BUNDLE_RECIPE) BUNDLE_NAME=$(BUNDLE_NAME) \
+		$(BUILD_SCRIPT) bundle
+
 snapshot-deploy:
-	tqem-copy.sh $(TQEM_ARTIFACTS_PATH) $(TQEM_EMOS_DEPLOY_PATH) --overwrite
+	tqem-copy.sh $(TQEM_DEPLOY_PATH) $(TQEM_DEPLOY_SNAPSHOT_PATH) --overwrite
 
 release-prepare: prepare
 	$(RELEASE_SCRIPT) fetch
@@ -27,7 +31,7 @@ release: clean-artifacts release-prepare
 	$(RELEASE_SCRIPT) collect
 
 release-deploy:
-	tqem-copy-safe.sh $(TQEM_ARTIFACTS_PATH) $(TQEM_EMOS_DEPLOY_PATH)
+	tqem-copy-safe.sh $(TQEM_DEPLOY_PATH) $(TQEM_DEPLOY_RELEASE_PATH)
 
 release-test:
 	$(RELEASE_SCRIPT) test $(FUNCTION)

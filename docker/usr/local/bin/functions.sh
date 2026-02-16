@@ -7,10 +7,6 @@
 SUPPLEMENTAL_LAYER_CONF_DIR="local"
 SUPPLEMENTAL_LAYER_CONF_PATH="$SUPPLEMENTAL_LAYER_CONF_DIR/em-layers.conf"
 
-declare -A BOOTLOADERS
-BOOTLOADERS[em310]='u-boot.sb-em310'
-BOOTLOADERS[em-aarch64]='bootloader-*.bin'
-
 # Functions
 
 cd_em_build() {
@@ -113,8 +109,6 @@ remove_string() {
 # compatible with the bash, it cannot be deactivated by using the BB_ENV_PASSTHROUGH_ADDITIONS.
 # As a workaround we adjust the local.conf reading the TQEM_EM_AARCH64_MACHINE variable.
 adjust_local_conf_machine() {
-	local machine="$1"
-
 	local deactivate_em_cb30="EM_AARCH64_em-cb30 = \"0\""
 	local deactivate_em4xx="EM_AARCH64_em4xx = \"0\""
 
@@ -133,27 +127,6 @@ adjust_local_conf_machine() {
 		remove_string "$deactivate_em_cb30"
 		;;
 	esac
-}
-
-archive_bootloaders() {
-	local machine="$1"
-	local core_image_link core_image_file suffix
-
-	rm -f "${TQEM_YOCTO_DEPLOY_IMAGES_PATH}/${machine}"/em-image-core-*.bootloader.tar
-
-	core_image_link="${TQEM_YOCTO_DEPLOY_IMAGES_PATH}/${machine}/em-image-core-$machine.tar"
-	core_image_file="$(readlink -f "$core_image_link")"
-	core_image_file="$(basename "${core_image_file}" .rootfs.tar)"
-	suffix="${core_image_file##em-image-core-}"
-
-	# Use subshell to match $BOOTLOADERS[...] patterns relative to the right directory
-	(
-		# shellcheck disable=SC2086
-		cd "${TQEM_YOCTO_DEPLOY_IMAGES_PATH}/${machine}" && \
-		tar --owner=0 --group=0 --numeric-owner --sort=name --mtime=@0 \
-			-chf "em-image-core-${suffix}.bootloader.tar" ${BOOTLOADERS[$machine]}
-	)
-	ln -sf "em-image-core-${suffix}.bootloader.tar" "${TQEM_YOCTO_DEPLOY_IMAGES_PATH}/${machine}/em-image-core-${machine}.bootloader.tar"
 }
 
 sync_downloads_to_dlcache () {

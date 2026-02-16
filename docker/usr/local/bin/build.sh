@@ -72,7 +72,6 @@ core-image)
 		CORE_IMAGE_DEPLOY_PATH="$TQEM_COLLECT_PATH/core-image/$MACHINE"
 		tqem-copy.sh "$CORE_IMAGE_PATH" "$CORE_IMAGE_DEPLOY_PATH" --links --overwrite
 
-		archive_bootloaders "$MACHINE"
 		tqem-copy.sh "$TQEM_YOCTO_DEPLOY_IMAGES_PATH/$MACHINE/em-image-core-${MACHINE}.bootloader.tar" \
 			"$CORE_IMAGE_DEPLOY_PATH" --links --overwrite
 	done

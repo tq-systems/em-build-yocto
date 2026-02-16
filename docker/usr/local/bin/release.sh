@@ -152,27 +152,6 @@ collect_archives_mirror() {
     rsync -za --copy-links --exclude '*.done' --exclude 'apps*' --exclude 'git2*' "$TQEM_YOCTO_DOWNLOADS_PATH"/* "$MIRROR_URI:$MIRROR_PATH"
 }
 
-archive_bootloaders() {
-    local machine="$1"
-    local core_image_link core_image_file suffix
-
-    rm -f "${TQEM_YOCTO_DEPLOY_IMAGES_PATH}/${machine}"/em-image-core-*.bootloader.tar
-
-    core_image_link="${TQEM_YOCTO_DEPLOY_IMAGES_PATH}/${machine}/em-image-core-$machine.tar"
-    core_image_file="$(readlink -f "$core_image_link")"
-    core_image_file="$(basename "${core_image_file}" .rootfs.tar)"
-    suffix="${core_image_file##em-image-core-}"
-
-    # Use subshell to match $BOOTLOADERS[...] patterns relative to the right directory
-    (
-        # shellcheck disable=SC2086
-        cd "${TQEM_YOCTO_DEPLOY_IMAGES_PATH}/${machine}" && \
-        tar --owner=0 --group=0 --numeric-owner --sort=name --mtime=@0 \
-            -chf "em-image-core-${suffix}.bootloader.tar" ${BOOTLOADERS[$machine]}
-    )
-    ln -sf "em-image-core-${suffix}.bootloader.tar" "${TQEM_YOCTO_DEPLOY_IMAGES_PATH}/${machine}/em-image-core-${machine}.bootloader.tar"
-}
-
 collect_core() {
     for machine in $TQEM_MACHINES; do
         architecture="aarch64"
@@ -181,7 +160,6 @@ collect_core() {
         tqem-copy.sh "$TQEM_YOCTO_DEPLOY_IMAGES_PATH/$machine/em-image-core-$machine.tar" "$TQEM_COLLECT_PATH/core-image/$machine" --links --overwrite
 
         # bootloader
-        archive_bootloaders "$machine"
         tqem-copy.sh "$TQEM_YOCTO_DEPLOY_IMAGES_PATH/$machine/em-image-core-$machine.bootloader.tar" "$TQEM_COLLECT_PATH/core-image/$machine"  --links --overwrite
 
         # toolchain

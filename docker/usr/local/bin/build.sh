@@ -60,8 +60,6 @@ adjust_local_conf_machine "$TQEM_EM_AARCH64_MACHINE"
 
 TARGET="$1"
 
-TQEM_COLLECT_PATH="$TQEM_ARTIFACTS_PATH/$TQEM_BUILD_TYPE_SUBDIR/emos/$TQEM_EM_BUILD_REF"
-
 case $TARGET in
 core-image)
 	for MACHINE in $TQEM_MACHINES; do
@@ -69,9 +67,9 @@ core-image)
 			em-image-core
 
 		CORE_IMAGE_PATH="$(find "$TQEM_YOCTO_DEPLOY_IMAGES_PATH/$MACHINE" -type l -name "*em-image-core-${MACHINE}.tar")"
-		CORE_IMAGE_DEPLOY_PATH="$TQEM_COLLECT_PATH/core-image/$MACHINE"
-		tqem-copy.sh "$CORE_IMAGE_PATH" "$CORE_IMAGE_DEPLOY_PATH" --links --overwrite
+		CORE_IMAGE_DEPLOY_PATH="$TQEM_DEPLOY_PATH/core-image/$MACHINE"
 
+		tqem-copy.sh "$CORE_IMAGE_PATH" "$CORE_IMAGE_DEPLOY_PATH" --links --overwrite
 		tqem-copy.sh "$TQEM_YOCTO_DEPLOY_IMAGES_PATH/$MACHINE/em-image-core-${MACHINE}.bootloader.tar" \
 			"$CORE_IMAGE_DEPLOY_PATH" --links --overwrite
 	done
@@ -89,7 +87,22 @@ toolchain)
 		ln -sf "$TOOLCHAIN_FILE" "${TQEM_YOCTO_DEPLOY_SDK_PATH}/${TOOLCHAIN_PATTERN}.sh"
 
 		tqem-copy.sh "${TQEM_YOCTO_DEPLOY_SDK_PATH}/${TOOLCHAIN_PATTERN}.sh" \
-			"$TQEM_COLLECT_PATH/toolchain/$ARCHITECTURE" --links --overwrite
+			"$TQEM_DEPLOY_PATH/toolchain/$ARCHITECTURE" --links --overwrite
+	done
+	;;
+bundle)
+	[ -z "$BUNDLE_NAME" ] && tqem_log_error_and_exit "BUNDLE_NAME does not exist"
+	[ -z "$BUNDLE_RECIPE" ] && tqem_log_error_and_exit "BUNDLE_RECIPE does not exist"
+
+	for MACHINE in $TQEM_MACHINES; do
+		MACHINE="$MACHINE" bitbake -R "${TQEM_ADD_CONF_PATH}/shallow-tarballs.conf" "$BUNDLE_RECIPE"
+
+		DEVICE_TYPE="$(tqem-device.sh type "$MACHINE")"
+		BUNDLE_PATH="$(find "$TQEM_YOCTO_DEPLOY_IMAGES_PATH/$MACHINE" -type l -name "*${BUNDLE_NAME}*${DEVICE_TYPE}.raucb")"
+		[ ! -f "$BUNDLE_PATH" ] && tqem_log_error_and_exit "Cannot find bundle with pattern *${BUNDLE_NAME}*${DEVICE_TYPE}.raucb"
+
+		BUNDLE_DEPLOY_PATH="$TQEM_DEPLOY_PATH/$MACHINE"
+		tqem-copy.sh "$BUNDLE_PATH" "$BUNDLE_DEPLOY_PATH" --links --overwrite
 	done
 	;;
 cve)

@@ -1,3 +1,6 @@
+# TQEM_YOCTO_PROJECT_PATH needs to be set before including environment.mk, all paths depend on it.
+export TQEM_YOCTO_PROJECT_PATH ?= $(CURDIR)
+
 TQEM_OPT_YOCTO_PATH ?= /opt/energy-manager/yocto
 include $(TQEM_OPT_YOCTO_PATH)/environment.mk
 

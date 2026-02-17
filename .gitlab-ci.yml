@@ -53,7 +53,7 @@ Build and Deploy Core Snapshots:
   script: |
     make clean-artifacts
     make all
-    [ "$SKIP_DEPLOYMENT" != 'true' ] && make snapshot-deploy
+    [ "$SKIP_DEPLOYMENT" != 'true' ] && make snapshot-deploy-remote
 
 # Release
 Build Core-Image and Toolchain Release:
@@ -76,7 +76,7 @@ Deploy Core-Image and Toolchain Release:
     SUBDIR_JOB: 'release'
   script:
     - make mirror
-    - make release-deploy
+    - make release-deploy-remote
 
 # Docker builds
 # Test the docker build without deployment

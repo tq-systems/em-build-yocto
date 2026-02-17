@@ -23,6 +23,9 @@ bundle: prepare
 snapshot-deploy:
 	tqem-copy.sh $(TQEM_DEPLOY_PATH) $(TQEM_DEPLOY_SNAPSHOT_PATH) --overwrite
 
+snapshot-deploy-remote:
+	$(DEPLOY_REMOTE_SCRIPT) $(TQEM_DEPLOY_PATH) $(TQEM_DEPLOY_SNAPSHOT_PATH) --overwrite
+
 release-prepare: prepare
 	$(RELEASE_SCRIPT) fetch
 
@@ -32,6 +35,9 @@ release: clean-artifacts release-prepare
 
 release-deploy:
 	tqem-copy-safe.sh $(TQEM_DEPLOY_PATH) $(TQEM_DEPLOY_RELEASE_PATH)
+
+release-deploy-remote:
+	$(DEPLOY_REMOTE_SCRIPT) $(TQEM_DEPLOY_PATH) $(TQEM_DEPLOY_RELEASE_PATH)
 
 release-test:
 	$(RELEASE_SCRIPT) test $(FUNCTION)

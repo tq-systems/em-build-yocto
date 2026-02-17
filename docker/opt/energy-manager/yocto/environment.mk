@@ -85,5 +85,6 @@ export PATH_LOCAL_YOCTO_CONF ?= $(HOME)/.yocto
 export PREPARE_SCRIPT               = prepare.sh
 export BUILD_SCRIPT                 = build.sh
 export RELEASE_SCRIPT               = release.sh
+export DEPLOY_REMOTE_SCRIPT         = remote-deploy.sh
 
 export TQEM_YOCTO_LOCAL_CONF        = $(TQEM_YOCTO_CONF_PATH)/local.conf

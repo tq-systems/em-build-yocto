@@ -33,11 +33,11 @@ FILE_SOURCES_ARCHIVE="${PATTERN_SOURCES_ARCHIVE}_${TQEM_EM_BUILD_REF}.tar.gz"
 # The collect script needs TQEM_BUILD_TYPE_SUBDIR
 export TQEM_BUILD_TYPE_SUBDIR="$TQEM_RELEASES_DIR"
 
-TQEM_COLLECT_PATH="$TQEM_ARTIFACTS_PATH/$TQEM_BUILD_TYPE_SUBDIR/emos/$TQEM_EM_BUILD_REF"
+TQEM_DEPLOY_PATH="$TQEM_ARTIFACTS_PATH/$TQEM_BUILD_TYPE_SUBDIR/emos/$TQEM_EM_BUILD_REF"
 
 clean-collect-dir() {
-    tqem_log_info "Deleting $TQEM_COLLECT_PATH..."
-    rm -rfv "$TQEM_COLLECT_PATH"
+    tqem_log_info "Deleting $TQEM_DEPLOY_PATH..."
+    rm -rfv "$TQEM_DEPLOY_PATH"
 }
 
 # Builds
@@ -105,20 +105,20 @@ build_fill_dlcache() {
 
 # Collecting
 collect_sources_archive() {
-    mkdir -p "$TQEM_COLLECT_PATH/sources/build"
+    mkdir -p "$TQEM_DEPLOY_PATH/sources/build"
     cp "$FILE_SOURCES_ARCHIVE" \
-        "$TQEM_COLLECT_PATH/sources/build"
+        "$TQEM_DEPLOY_PATH/sources/build"
 }
 
 collect_license_clearing_archives() {
-    mkdir -p "$TQEM_COLLECT_PATH/sources/license-clearing"
+    mkdir -p "$TQEM_DEPLOY_PATH/sources/license-clearing"
     find "$TQEM_YOCTO_DEPLOY_SOURCES_PATH" -type f \
-        -exec rsync -rl --ignore-existing {} "$TQEM_COLLECT_PATH/sources/license-clearing" \;
+        -exec rsync -rl --ignore-existing {} "$TQEM_DEPLOY_PATH/sources/license-clearing" \;
 }
 
 collect_manifest() {
     local machine dir_work_machine dir_target_rootfs path_collect_manifest
-    path_collect_manifest="$TQEM_COLLECT_PATH/sources/manifest"
+    path_collect_manifest="$TQEM_DEPLOY_PATH/sources/manifest"
 
     # shellcheck disable=SC2153
     for machine in $TQEM_MACHINES; do
@@ -157,13 +157,13 @@ collect_core() {
         architecture="aarch64"
 
         # core-image
-        tqem-copy.sh "$TQEM_YOCTO_DEPLOY_IMAGES_PATH/$machine/em-image-core-$machine.tar" "$TQEM_COLLECT_PATH/core-image/$machine" --links --overwrite
+        tqem-copy.sh "$TQEM_YOCTO_DEPLOY_IMAGES_PATH/$machine/em-image-core-$machine.tar" "$TQEM_DEPLOY_PATH/core-image/$machine" --links --overwrite
 
         # bootloader
-        tqem-copy.sh "$TQEM_YOCTO_DEPLOY_IMAGES_PATH/$machine/em-image-core-$machine.bootloader.tar" "$TQEM_COLLECT_PATH/core-image/$machine"  --links --overwrite
+        tqem-copy.sh "$TQEM_YOCTO_DEPLOY_IMAGES_PATH/$machine/em-image-core-$machine.bootloader.tar" "$TQEM_DEPLOY_PATH/core-image/$machine"  --links --overwrite
 
         # toolchain
-        tqem-copy.sh "$TQEM_YOCTO_DEPLOY_SDK_PATH/emos-x86_64-$architecture-toolchain.sh" "$TQEM_COLLECT_PATH/toolchain/$architecture" --links --overwrite
+        tqem-copy.sh "$TQEM_YOCTO_DEPLOY_SDK_PATH/emos-x86_64-$architecture-toolchain.sh" "$TQEM_DEPLOY_PATH/toolchain/$architecture" --links --overwrite
     done
 }
 
@@ -175,19 +175,19 @@ collect_core_image_sbom() {
             path_source="$TQEM_YOCTO_DEPLOY_PATH/cyclonedx-export/bom_${machine}.json"
         fi
 
-        tqem-copy.sh "$path_source" "$TQEM_COLLECT_PATH/core-image/$machine"
+        tqem-copy.sh "$path_source" "$TQEM_DEPLOY_PATH/core-image/$machine"
     done
 }
 
 collect_core_image_cve() {
     for machine in $TQEM_MACHINES; do
-        tqem-copy.sh "$TQEM_YOCTO_DEPLOY_IMAGES_PATH/$machine/$CORE_IMAGE-$machine.cve.json" "$TQEM_COLLECT_PATH/sources/cve-list/"
+        tqem-copy.sh "$TQEM_YOCTO_DEPLOY_IMAGES_PATH/$machine/$CORE_IMAGE-$machine.cve.json" "$TQEM_DEPLOY_PATH/sources/cve-list/"
     done
 }
 
 collect_core_image_spdx() {
     for machine in $TQEM_MACHINES; do
-        tqem-copy.sh  "$TQEM_YOCTO_DEPLOY_IMAGES_PATH/$machine/$CORE_IMAGE-$machine.spdx.tar.zst" "$TQEM_COLLECT_PATH/sources/spdx/"
+        tqem-copy.sh  "$TQEM_YOCTO_DEPLOY_IMAGES_PATH/$machine/$CORE_IMAGE-$machine.spdx.tar.zst" "$TQEM_DEPLOY_PATH/sources/spdx/"
     done
 }
 

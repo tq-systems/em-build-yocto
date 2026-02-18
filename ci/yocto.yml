@@ -1,7 +1,19 @@
+
+# Settings for this project
+.internal-yocto-settings:
+  extends:
+    - .general-yocto-settings
+    - .image-yocto
+
+# Settings for other yocto projects with the docker image from this project
 .common-yocto-settings:
   extends:
+    - .general-yocto-settings
+    - .yocto-build-image
+
+.general-yocto-settings:
+  extends:
     - .gitlab-runner-tag
-    - .image-yocto
   variables:
     # 'tq-em-yocto' is a dedicated gitlab-runner for yocto builds
     # 'tq-em-yocto-fast' is a fast gitlab-runner for yocto builds with a dl-cache

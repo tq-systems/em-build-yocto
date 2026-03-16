@@ -10,7 +10,7 @@ SUPPLEMENTAL_LAYER_CONF_PATH="$SUPPLEMENTAL_LAYER_CONF_DIR/em-layers.conf"
 # Functions
 
 cd_em_build() {
-	cd "$TQEM_EM_BUILD_DIR" || tqem_log_error_and_exit "Cannot change directory to: $TQEM_EM_BUILD_DIR"
+	cd "$TQEM_EM_BUILD_PATH" || tqem_log_error_and_exit "Cannot change directory to: $TQEM_EM_BUILD_PATH"
 }
 
 setup_em_build() {
@@ -172,5 +172,64 @@ sync_downloads_to_dlcache () {
 		dir=$(dirname "${f}")
 		mkdir -p "${source_mirror_url}/${dir}"
 		cp "${cpopt}" -v "${f}" "${source_mirror_url}/${dir}"
+	done
+}
+
+fill-dl-cache() {
+	export BB_ENV_PASSTHROUGH_ADDITIONS='ACCEPT_FSL_EULA'
+	export ACCEPT_FSL_EULA='1'
+	cd_em_build
+	setup_build_environment
+	# Get the source mirror url from bitbake, remove the file:// prefix and resolve the path to an absolute path
+	# Allow readlink to fail if no SOURCE_MIRROR_URL is set
+	SOURCE_MIRROR_URL=$(bitbake-getvar --value -q --ignore-undefined SOURCE_MIRROR_URL)
+	SOURCE_MIRROR_URL=${SOURCE_MIRROR_URL#file://*}
+	SOURCE_MIRROR_URL=$(readlink -f "${SOURCE_MIRROR_URL}" || true)
+
+	DL_DIR=$(bitbake-getvar --value -q --ignore-undefined DL_DIR)
+
+	if [ -z "$SKIP_FILL_MIRROR" ] && [ -d "$SOURCE_MIRROR_URL" ]; then
+		sync_downloads_to_dlcache "$DL_DIR" "$SOURCE_MIRROR_URL"
+	fi
+}
+
+build_core_cve_sbom() {
+	export BB_ENV_PASSTHROUGH_ADDITIONS='ACCEPT_FSL_EULA'
+	export ACCEPT_FSL_EULA='1'
+	cd_em_build
+	setup_build_environment
+	for MACHINE in $TQEM_MACHINES; do
+		MACHINE="$MACHINE" bitbake \
+		-R "${TQEM_ADD_CONF_PATH}/check-vulnerabilities.conf" \
+		-R "${TQEM_ADD_CONF_PATH}/shallow-tarballs.conf" \
+		-R "${TQEM_ADD_CONF_PATH}/license-clearing.conf" "$@"
+
+		BBMULTICONFIG=$(MACHINE=$MACHINE bitbake-getvar --value -q --ignore-undefined BBMULTICONFIG)
+		# For multiconfig builds, the cve-summary.json is generated for each machine and the multiconfigs. These must
+		# be merged to get a complete list of CVEs for the machine.
+		if [ -n "$BBMULTICONFIG" ]; then
+			for mc in $BBMULTICONFIG; do
+				mc_cves="${mc_cves} $(find "${TQEM_YOCTO_TMP_PATH}-${mc}/log" -name "cve-summary.json")"
+				mc_boms="${mc_boms} $(find "${TQEM_YOCTO_TMP_PATH}-${mc}/deploy/cyclonedx-export" -name "*.json")"
+			done
+			machine_cves=$(find "${TQEM_YOCTO_TMP_PATH}/log" -name "cve-summary.json")
+			machine_bom=$(find "$TQEM_YOCTO_DEPLOY_PATH" -name "em-image-core-${MACHINE}.sbom-cyclonedx.json")
+			merged_cves="${TQEM_YOCTO_DEPLOY_IMAGES_PATH}/${MACHINE}/em-image-core-${MACHINE}_merged.cve.json"
+			merged_bom="$(dirname "$machine_bom")/$(basename "$machine_bom" .json)_merged.json"
+			# merge multiconfig cves and machine cves
+			# shellcheck disable=SC2086
+			jq -s '.[0].package=([.[].package]|flatten|unique_by(.name)|sort_by(.name))|.[0]' "$machine_cves" $mc_cves > "$merged_cves"
+			ln -srf "$merged_cves" "${TQEM_YOCTO_DEPLOY_IMAGES_PATH}/${MACHINE}/em-image-core-${MACHINE}.cve.json"
+			#merge multiconfig boms and machine bom
+			# shellcheck disable=SC2086
+			jq -s '.[0].components=([.[].components]|flatten|unique_by(.cpe)|sort_by(.cpe))|.[0]' "$machine_bom" $mc_boms > "$merged_bom"
+		fi
+
+		CORE_IMAGE_PATH="$(find "${TQEM_YOCTO_DEPLOY_IMAGES_PATH}/${MACHINE}" -type l -name "*em-image-core-${MACHINE}.tar")"
+		CORE_IMAGE_DEPLOY_PATH="${TQEM_DEPLOY_PATH}/core-image/${MACHINE}"
+
+		tqem-copy.sh "${CORE_IMAGE_PATH}" "${CORE_IMAGE_DEPLOY_PATH}" --links --overwrite
+		tqem-copy.sh "${TQEM_YOCTO_DEPLOY_IMAGES_PATH}/${MACHINE}/em-image-core-${MACHINE}.bootloader.tar" \
+			"${CORE_IMAGE_DEPLOY_PATH}" --links --overwrite
 	done
 }

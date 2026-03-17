@@ -129,9 +129,30 @@ adjust_local_conf_machine() {
 	esac
 }
 
+# TODO: Remove this treatment after base update to Ubuntu 24.04
+#
+# The command 'cp --no-clobber' reports since coreutils v9.3:
+# "warning: behavior of -n is non-portable and may change in future; use --update=none instead"
+#
+# While prior versions do not support the "none" argument for --update and return an error.
+# Evaluate the version of cp and select the argument accordingly.
+cp_supports_update_none() {
+	version=$(cp --version | head -n1 | grep -oE '[0-9]+\.[0-9]+')
+
+	major=${version%%.*}
+	minor=${version##*.}
+
+	if [ "$major" -gt 9 ] || { [ "$major" -eq 9 ] && [ "$minor" -gt 2 ]; }; then
+		echo "--update=none"
+	else
+		echo "--no-clobber"
+	fi
+}
+
 sync_downloads_to_dlcache () {
 	local dl_dir="$1"
 	local source_mirror_url="$2"
+	cpopt=$(cp_supports_update_none)
 
 	[ -n "$dl_dir" ] || tqem_log_error_and_exit "Missing DL_DIR"
 	[ -n "$source_mirror_url" ] || tqem_log_error_and_exit "Missing SOURCE_MIRROR_URL"
@@ -141,7 +162,7 @@ sync_downloads_to_dlcache () {
 	# search for newly downloaded files, links point to mounted
 	# SOURCE_MIRROR_URL. *.done files are only state info
 	find "${dl_dir}" -maxdepth 1 -type f -readable -not -name "*.done" -print0 | \
-	xargs --null --no-run-if-empty cp --update=none -v --target-directory="${source_mirror_url}/"
+	xargs --null --no-run-if-empty cp "${cpopt}" -v --target-directory="${source_mirror_url}/"
 
 	# uninative normally consists of one file, so the loop should
 	# be no problem here
@@ -150,6 +171,6 @@ sync_downloads_to_dlcache () {
 	for f in ${files}; do
 		dir=$(dirname "${f}")
 		mkdir -p "${source_mirror_url}/${dir}"
-		cp --update=none -v "${f}" "${source_mirror_url}/${dir}"
+		cp "${cpopt}" -v "${f}" "${source_mirror_url}/${dir}"
 	done
 }

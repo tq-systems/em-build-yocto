@@ -1,1 +1,3 @@
 ## [{{ version }}]
+### Changed
+- ci/include: update base image

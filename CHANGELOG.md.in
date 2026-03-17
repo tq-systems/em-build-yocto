@@ -1,6 +1,1 @@
 ## [{{ version }}]
-### Added
-- release.sh: added support for ubuntu 22.04's copy command
-
-### Changed
-- ci/include: update base image

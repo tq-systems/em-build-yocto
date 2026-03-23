@@ -13,8 +13,8 @@ export TQEM_EM_BUILD_GIT_REPO ?= https://github.com/tq-systems/em-build.git
 # convention is introduced. If the tag has the prefix 'em-build_', the git tag
 # of em-build is derived from it.
 
-ifneq ($(strip ${BUILD_TAG}),)
-  DERIVE_TAG = $(shell echo ${BUILD_TAG} | grep  ^em-build_ | sed -e 's/em-build_//g')
+ifneq ($(strip ${TQEM_EM_BUILD_VERSION}),)
+  DERIVE_TAG = $(shell echo ${TQEM_EM_BUILD_VERSION} | grep  ^em-build_ | sed -e 's/em-build_//g')
   ifneq ($(DERIVE_TAG),)
     TQEM_EM_BUILD_REF = $(DERIVE_TAG)
   endif

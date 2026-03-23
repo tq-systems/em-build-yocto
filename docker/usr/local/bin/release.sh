@@ -30,11 +30,6 @@ CORE_IMAGE="em-image-core"
 PATTERN_SOURCES_ARCHIVE="sources_${CORE_IMAGE}"
 FILE_SOURCES_ARCHIVE="${PATTERN_SOURCES_ARCHIVE}_${TQEM_EM_BUILD_REF}.tar.gz"
 
-# The collect script needs TQEM_BUILD_TYPE_SUBDIR
-export TQEM_BUILD_TYPE_SUBDIR="$TQEM_RELEASES_DIR"
-
-TQEM_DEPLOY_PATH="$TQEM_ARTIFACTS_PATH/$TQEM_BUILD_TYPE_SUBDIR/emos/$TQEM_EM_BUILD_REF"
-
 clean-collect-dir() {
     tqem_log_info "Deleting $TQEM_DEPLOY_PATH..."
     rm -rfv "$TQEM_DEPLOY_PATH"
@@ -157,10 +152,10 @@ collect_core() {
         architecture="aarch64"
 
         # core-image
-        tqem-copy.sh "$TQEM_YOCTO_DEPLOY_IMAGES_PATH/$machine/em-image-core-$machine.tar" "$TQEM_DEPLOY_PATH/core-image/$machine" --links --overwrite
+        tqem-copy.sh "$TQEM_YOCTO_DEPLOY_IMAGES_PATH/$machine/$CORE_IMAGE-$machine.tar" "$TQEM_DEPLOY_PATH/core-image/$machine" --links --overwrite
 
         # bootloader
-        tqem-copy.sh "$TQEM_YOCTO_DEPLOY_IMAGES_PATH/$machine/em-image-core-$machine.bootloader.tar" "$TQEM_DEPLOY_PATH/core-image/$machine"  --links --overwrite
+        tqem-copy.sh "$TQEM_YOCTO_DEPLOY_IMAGES_PATH/$machine/$CORE_IMAGE-$machine.bootloader.tar" "$TQEM_DEPLOY_PATH/core-image/$machine"  --links --overwrite
 
         # toolchain
         tqem-copy.sh "$TQEM_YOCTO_DEPLOY_SDK_PATH/emos-x86_64-$architecture-toolchain.sh" "$TQEM_DEPLOY_PATH/toolchain/$architecture" --links --overwrite

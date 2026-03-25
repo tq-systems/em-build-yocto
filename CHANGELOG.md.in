@@ -1,1 +1,3 @@
 ## [{{ version }}]
+### Fixed
+- license-clearing.conf: disable license-header generation

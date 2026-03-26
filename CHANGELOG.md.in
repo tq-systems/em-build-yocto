@@ -1,6 +1,6 @@
 ## [{{ version }}]
 ### Fixed
-- license-clearing.conf: disable license-header generation
+- license-clearing.conf: replace em-license-header with em-license-compliance
 
 ### Added
 - release.sh: added support for ubuntu 22.04's copy command

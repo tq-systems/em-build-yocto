@@ -68,23 +68,9 @@ build_sources_archive() {
     gzip "$TMP_ARCHIVE"
 }
 
-build_core_image_sbom() {
-    tqem_log_info "Create sbom"
-    "$BUILD_SCRIPT" sbom "$CORE_IMAGE"
-}
-
-build_core_image_cve() {
-    tqem_log_info "Create cve-list"
-    "$BUILD_SCRIPT" cve "$CORE_IMAGE"
-}
-
-build_core_image() {
-    tqem_log_info "Build $CORE_IMAGE with release configuration"
-    "$BUILD_SCRIPT" \
-        -R "$TQEM_ADD_CONF_PATH/license-clearing.conf" \
-        -R "$TQEM_ADD_CONF_PATH/shallow-tarballs.conf" \
-        -R "$TQEM_ADD_CONF_PATH/create-spdx.conf" \
-        "$CORE_IMAGE"
+build_core_image_cve_sbom() {
+    tqem_log_info "Creating core-image with cve and sbom"
+    build_core_cve_sbom "$CORE_IMAGE"
 }
 
 build_toolchain() {
@@ -95,7 +81,7 @@ build_toolchain() {
 
 build_fill_dlcache() {
     tqem_log_info "Fill download cache"
-    "$BUILD_SCRIPT" fill-dl-cache
+    fill-dl-cache
 }
 
 # Collecting
@@ -165,9 +151,9 @@ collect_core() {
 collect_core_image_sbom() {
     for machine in $TQEM_MACHINES; do
         if [ "$machine" = "em-aarch64" ]; then
-            path_source="$TQEM_YOCTO_DEPLOY_PATH/cyclonedx-export/bom_${machine}_merged.json"
+            path_source="$TQEM_YOCTO_DEPLOY_IMAGES_PATH/${machine}/$CORE_IMAGE-${machine}.sbom-cyclonedx_merged.json"
         else
-            path_source="$TQEM_YOCTO_DEPLOY_PATH/cyclonedx-export/bom_${machine}.json"
+            path_source="$TQEM_YOCTO_DEPLOY_IMAGES_PATH/${machine}/$CORE_IMAGE-${machine}.sbom-cyclonedx.json"
         fi
 
         tqem-copy.sh "$path_source" "$TQEM_DEPLOY_PATH/core-image/$machine"
@@ -200,9 +186,7 @@ fetch)
     build_sources_archive
     ;;
 build)
-    build_core_image
-    build_core_image_sbom
-    build_core_image_cve
+    build_core_image_cve_sbom
     build_toolchain
     ;;
 collect)

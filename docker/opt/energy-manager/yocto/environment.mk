@@ -14,7 +14,9 @@ export TQEM_EM_BUILD_GIT_REPO ?= https://github.com/tq-systems/em-build.git
 # of em-build is derived from it.
 
 ifneq ($(strip ${TQEM_EM_BUILD_VERSION}),)
-  DERIVE_TAG = $(shell echo ${TQEM_EM_BUILD_VERSION} | grep  ^em-build_ | sed -e 's/em-build_//g')
+  # TQEM_EM_BUILD_VERSION is constructed as 'em-build_(core-image-tag)[_(suffix)]'
+  # If there is a suffix after core-image-tag it must be separated with an underscore.
+  DERIVE_TAG = $(shell echo ${TQEM_EM_BUILD_VERSION} | sed -n 's/^em-build_\([^_]*\).*$$/\1/p')
   ifneq ($(DERIVE_TAG),)
     TQEM_EM_BUILD_REF = $(DERIVE_TAG)
   endif

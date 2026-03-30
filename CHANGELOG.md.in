@@ -1,9 +1,3 @@
 ## [{{ version }}]
-### Fixed
-- license-clearing.conf: disable license-header generation
-
-### Added
-- release.sh: added support for ubuntu 22.04's copy command
-
 ### Changed
-- ci/include: update base image
+- Update base reference to v2.2.0

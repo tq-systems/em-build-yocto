@@ -1,3 +1,9 @@
+## [1.1.0] - 2026-04-01
+### Changed
+- Update base reference to v2.2.0
+- Improved release build workflow
+- Support yocto buildtag suffixes
+
 ## [1.0.3] - 2026-03-25
 ### Fixed
 - license-clearing.conf: disable license-header generation

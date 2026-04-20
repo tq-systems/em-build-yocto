@@ -4,3 +4,4 @@
 
 ### Changed
 - Update base reference to v2.2.1
+- release.sh: fetch: use multi-core compression with pigz when available

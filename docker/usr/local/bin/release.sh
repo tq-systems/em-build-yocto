@@ -65,7 +65,7 @@ build_sources_archive() {
         "$TQEM_YOCTO_DOWNLOADS_DIR"
 
     # create final FILE_SOURCES_ARCHIVE
-    gzip "$TMP_ARCHIVE"
+    pigz --best "$TMP_ARCHIVE"
 }
 
 build_core_image_cve_sbom() {

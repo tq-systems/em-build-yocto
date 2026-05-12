@@ -1,1 +1,3 @@
 ## [{{ version }}]
+### Changed
+- Update base reference to v3.0.0

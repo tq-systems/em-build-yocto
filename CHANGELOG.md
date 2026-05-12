@@ -1,3 +1,11 @@
+## [1.1.0] - 2026-04-01
+### Fixed
+- license-clearing.conf: replace em-license-header with em-license-compliance
+
+### Changed
+- Update base reference to v2.2.1
+- release.sh: fetch: use multi-core compression with pigz when available
+
 ## [1.0.3] - 2026-03-25
 ### Fixed
 - license-clearing.conf: disable license-header generation

@@ -85,9 +85,7 @@ Deploy Core-Image and Toolchain Release:
 Test docker build:
   stage: test
   extends:
-    - .image-docker
-    - .gitlab-runner-tag
-    - .before-script-docker-login
+    - .docker-build
     - .rule-include-development-branches
   script:
     - make -f docker.mk all
@@ -96,9 +94,7 @@ Test docker build:
 Deploy yocto docker image:
   stage: deploy
   extends:
-    - .image-docker
-    - .gitlab-runner-tag
-    - .before-script-docker-login
+    - .docker-build
     - .rule-include-default-branch-or-tags
   script:
     - make -f docker.mk release

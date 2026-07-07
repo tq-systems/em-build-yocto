@@ -238,6 +238,16 @@ export CLEAN_MODE=""  # No cleaning
 make build TARGET=modified-recipe
 ```
 
+### Test Release Build
+
+The following command tests a release build with deployment:
+```bash
+export CLEAN_MODE="full"
+export TQEM_DEPLOY_RELEASE_PATH=$(HOME)/workspace/test/deploy
+export TQEM_EM_BUILD_VERSION="<em-build git tag>"
+make release
+```
+
 ## Output Artifacts
 
 ### Core Image Artifacts

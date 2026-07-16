@@ -1,3 +1,11 @@
+## [1.2.1] - 2026-05-22
+### Changed
+- Update base reference to v3.1.0
+
+## [1.2.0] - 2026-05-13
+### Changed
+- Update base reference to v3.0.0
+
 ## [1.1.0] - 2026-04-01
 ### Fixed
 - license-clearing.conf: replace em-license-header with em-license-compliance

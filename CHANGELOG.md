@@ -1,3 +1,7 @@
+## [1.2.2] - 2026-07-24
+### Changed
+- license-clearing: exclude util-linux-libuuid
+
 ## [1.2.1] - 2026-05-22
 ### Changed
 - Update base reference to v3.1.0

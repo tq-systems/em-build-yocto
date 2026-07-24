@@ -1,1 +1,3 @@
 ## [{{ version }}]
+### Changed
+- license-clearing: exclude util-linux-libuuid

@@ -1,10 +1,20 @@
 services:
+  base:
+    build:
+      context: .
+      dockerfile: docker/base.Dockerfile
+      args:
+        - BASE_REGISTRY=${BASE_REGISTRY}
+        - BASE_DOCKER_TAG=${BASE_DOCKER_TAG}
+        - BUILD_TAG=${BUILD_TAG}
+    image: ${YOCTO_REGISTRY}/base:${BUILD_TAG}
+
   build:
     build:
       context: .
       dockerfile: docker/build.Dockerfile
       args:
-        - BASE_REGISTRY=${BASE_REGISTRY}
-        - BASE_DOCKER_TAG=${BASE_DOCKER_TAG}
+        - YOCTO_REGISTRY=${YOCTO_REGISTRY}
+        - BUILD_TAG=${BUILD_TAG}
         - DOCKER_USER=${DOCKER_USER}
     image: ${YOCTO_REGISTRY}/build:${BUILD_TAG}

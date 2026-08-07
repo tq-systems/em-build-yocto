@@ -19,10 +19,10 @@ endif
 
 IMAGE ?= base build
 COMPOSE_FILE ?= -f docker-compose.yml
-# Additional docker-compose build options may be set (e.g. --no-cache)
+# Additional docker compose build options may be set (e.g. --no-cache)
 BUILD_ARGS ?=
 
-# .env file is read by docker-compose
+# .env file is read by docker compose
 DOCKER_COMPOSE_ENV = .env
 
 DOCKER_USER ?= tqemci

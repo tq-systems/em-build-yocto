@@ -6,6 +6,7 @@ include:
 
 # Common definitions
 stages:
+  - docker
   - test
   - build
   - deploy
@@ -14,14 +15,30 @@ stages:
 variables:
   TQEM_MACHINES: 'em310 em-aarch64'
 
-.rule-default-branch-or-force-snapshot:
+# Docker
+Release Docker Images:
+  stage: docker
+  extends:
+    - .docker-build
+  # The make target 'all' is always tested because it is essential for local builds.
+  script:
+    - make -f docker.mk all
+    - make -f docker.mk release
   rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      variables:
+        BUILD_TAG: 'mr-${CI_MERGE_REQUEST_IID}'
+    - if: $TEST_DOCKER == 'true'
+      variables:
+        BUILD_TAG: 'test-${CI_COMMIT_REF_SLUG}'
     - if: $CI_COMMIT_TAG
-      when: never
+      variables:
+        BUILD_TAG: $CI_COMMIT_TAG
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
-    - if: $FORCE_SNAPSHOT == 'true'
+      variables:
+        BUILD_TAG: 'latest'
 
-# Test
+# Tests
 Test yocto build from scratch:
   stage: test
   extends:
@@ -33,6 +50,18 @@ Test yocto build from scratch:
     YOCTO_RECIPE: 'libtool-native'
   script:
     - make build TARGET=${YOCTO_RECIPE} TQEM_MACHINES=em-aarch64
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      variables:
+        YOCTO_DOCKER_TAG: 'mr-${CI_MERGE_REQUEST_IID}'
+    - if: $TEST_DOCKER == 'true'
+      variables:
+        YOCTO_DOCKER_TAG: 'test-${CI_COMMIT_REF_SLUG}'
+    - if: $CI_COMMIT_REF_NAME != $CI_DEFAULT_BRANCH
+      variables:
+        YOCTO_DOCKER_TAG: 'latest'
 
 Gitleaks:
   extends: .gitleaks
@@ -42,20 +71,26 @@ Shell Linter:
     - .lint-shell
     - .rule-include-development-branches
 
-# Snapshot
+# Yocto Snapshot
 Build and Deploy Core Snapshots:
   stage: build
   extends:
     - .internal-yocto-settings
-    - .rule-default-branch-or-force-snapshot
   variables:
     SUBDIR_JOB: 'snapshot'
   script: |
     make clean-artifacts
     make all
     [ "$SKIP_DEPLOYMENT" != 'true' ] && make snapshot-deploy-remote
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH || $FORCE_SNAPSHOT == 'true'
+    - if: $TEST_DOCKER == 'true'
+      variables:
+        YOCTO_DOCKER_TAG: 'test-${CI_COMMIT_REF_SLUG}'
 
-# Release
+# Yocto Release
 Build Core-Image and Toolchain Release:
   stage: build
   extends:
@@ -80,30 +115,14 @@ Deploy Core-Image and Toolchain Release:
     - make mirror
     - make release-deploy-remote
 
-# Docker builds
-# Test the docker build without deployment
-Test docker build:
-  stage: test
-  extends:
-    - .docker-build
-    - .rule-include-development-branches
-  script:
-    - make -f docker.mk all
-
-# Build and deploy the docker image for the default branch or tags
-Deploy yocto docker image:
-  stage: deploy
-  extends:
-    - .docker-build
-    - .rule-include-default-branch-or-tags
-  script:
-    - make -f docker.mk release
-
-# Toolchain
+# Trigger toolchain tests
 Trigger Toolchain Build:
   stage: toolchain
-  extends:
-    - .rule-default-branch-or-force-snapshot
   trigger:
     project: tq-em/public/build/toolchain
     strategy: depend
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+    - if: $FORCE_SNAPSHOT == 'true'

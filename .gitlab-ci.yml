@@ -14,15 +14,15 @@ stages:
 
 variables:
   TQEM_MACHINES: 'em310 em-aarch64'
+  YOCTO_DOCKER_TAG: 'latest'
 
 # Docker
 Release Docker Images:
   stage: docker
   extends:
     - .docker-build
-  # The make target 'all' is always tested because it is essential for local builds.
+  # The 'all' make target is implicitly tested with 'release'; it is essential for local builds.
   script:
-    - make -f docker.mk all
     - make -f docker.mk release
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -43,7 +43,6 @@ Test yocto build from scratch:
   stage: test
   extends:
     - .internal-yocto-settings
-    - .rule-include-development-branches
   variables:
     SUBDIR_JOB: 'test'
     CLEAN_MODE: 'build'
@@ -60,8 +59,6 @@ Test yocto build from scratch:
       variables:
         YOCTO_DOCKER_TAG: 'test-${CI_COMMIT_REF_SLUG}'
     - if: $CI_COMMIT_REF_NAME != $CI_DEFAULT_BRANCH
-      variables:
-        YOCTO_DOCKER_TAG: 'latest'
 
 Gitleaks:
   extends: .gitleaks
@@ -78,10 +75,10 @@ Build and Deploy Core Snapshots:
     - .internal-yocto-settings
   variables:
     SUBDIR_JOB: 'snapshot'
-  script: |
-    make clean-artifacts
-    make all
-    [ "$SKIP_DEPLOYMENT" != 'true' ] && make snapshot-deploy-remote
+  script:
+    - make clean-artifacts
+    - make all
+    - make snapshot-deploy-remote
   rules:
     - if: $CI_COMMIT_TAG
       when: never
@@ -91,11 +88,19 @@ Build and Deploy Core Snapshots:
         YOCTO_DOCKER_TAG: 'test-${CI_COMMIT_REF_SLUG}'
 
 # Yocto Release
+# Release builds of em-build are triggered by tags with the prefix 'em-build_'
+.rule-yocto-release:
+  rules:
+    - if: $TEST_DOCKER == 'true' && $CI_COMMIT_TAG =~ /^em-build_/
+      variables:
+        YOCTO_DOCKER_TAG: 'test-${CI_COMMIT_REF_SLUG}'
+    - if: $CI_COMMIT_TAG =~ /^em-build_/
+
 Build Core-Image and Toolchain Release:
   stage: build
   extends:
     - .internal-yocto-settings
-    - .rule-if-tag-with-em-build-prefix
+    - .rule-yocto-release
   variables:
     TQEM_EM_BUILD_VERSION: $CI_COMMIT_TAG
     SUBDIR_JOB: 'release'
@@ -107,7 +112,7 @@ Deploy Core-Image and Toolchain Release:
   stage: deploy
   extends:
     - .internal-yocto-settings
-    - .rule-if-tag-with-em-build-prefix
+    - .rule-yocto-release
   variables:
     TQEM_EM_BUILD_VERSION: $CI_COMMIT_TAG
     SUBDIR_JOB: 'release'

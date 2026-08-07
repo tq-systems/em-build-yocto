@@ -2,7 +2,7 @@
 include:
 - project: tq-em/public/build/base
   file: ci/include.yml
-  ref: v3.1.0
+  ref: v4.0.0
   rules:
     - if: '$BASE_CI_REF'
       when: never

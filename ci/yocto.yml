@@ -1,9 +1,23 @@
+# The yocto builds run on a dedicated gitlab-runner which needs a dedicated 'tqemci' user.
+# YOCTO_DOCKER_TAG have to be defined where this template is extended, this enables
+# a flexible handling of different docker tags.
+.yocto-base-image:
+  image:
+    name: ${YOCTO_REGISTRY}/base:${YOCTO_DOCKER_TAG}
+    docker:
+      user: tqemci
+
+.yocto-build-image:
+  image:
+    name: ${YOCTO_REGISTRY}/build:${YOCTO_DOCKER_TAG}
+    docker:
+      user: tqemci
 
 # Settings for this project
 .internal-yocto-settings:
   extends:
     - .general-yocto-settings
-    - .image-yocto
+    - .yocto-base-image
 
 # Settings for other yocto projects with the docker image from this project
 .common-yocto-settings:
@@ -31,14 +45,6 @@
     - cat "$PACKAGES_RSA_KEY" | base64 -d | ssh-add -
     - mkdir ~/.ssh && chmod 700 ~/.ssh
     - echo "$TQ_EM_PACKAGES_SSH_CONFIG" > ~/.ssh/config
-
-# YOCTO_DOCKER_TAG have to be defined where this template is extended,
-# this enables a flexible handling of different docker tags
-.yocto-build-image:
-  image:
-    name: ${YOCTO_REGISTRY}/build:${YOCTO_DOCKER_TAG}
-    docker:
-      user: tqemci
 
 # Release builds of em-build are triggered by tags with the prefix 'em-build_'
 .rule-if-tag-with-em-build-prefix:

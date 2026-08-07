@@ -45,6 +45,12 @@ release-test:
 mirror:
 	$(RELEASE_SCRIPT) mirror
 
+# Enable to skip the deployment
+ifeq ($(SKIP_DEPLOYMENT),true)
+snapshot-deploy snapshot-deploy-remote release-deploy release-deploy-remote:
+	@echo "Skipping deployment because SKIP_DEPLOYMENT=true"
+endif
+
 # Clean up
 EXEC_CLEAN_ARTIFACTS := rm -rf $(TQEM_ARTIFACTS_DIR) $(TQEM_DEPLOY_DIR)
 EXEC_CLEAN_BUILD := rm -rf $(TQEM_YOCTO_BUILD_DIR)

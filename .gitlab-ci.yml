@@ -14,7 +14,7 @@ stages:
 
 variables:
   TQEM_MACHINES: 'em310 em-aarch64'
-  YOCTO_DOCKER_TAG: 'latest'
+  YOCTO_DOCKER_TAG: 'v1.3.0'
 
 # Docker
 Release Docker Images:

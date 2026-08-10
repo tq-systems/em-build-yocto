@@ -17,12 +17,12 @@ ifeq ($(strip ${BUILD_TAG}),)
 	BUILD_TAG := latest
 endif
 
-IMAGE ?= build
+IMAGE ?= base build
 COMPOSE_FILE ?= -f docker-compose.yml
-# Additional docker-compose build options may be set (e.g. --no-cache)
+# Additional docker compose build options may be set (e.g. --no-cache)
 BUILD_ARGS ?=
 
-# .env file is read by docker-compose
+# .env file is read by docker compose
 DOCKER_COMPOSE_ENV = .env
 
 DOCKER_USER ?= tqemci
@@ -39,8 +39,7 @@ DOCKER_COMPOSE := docker compose $(COMPOSE_FILE)
 
 MAKE_DOCKER := $(MAKE) -f docker.mk
 
-all: prepare
-	${DOCKER_COMPOSE} build ${BUILD_ARGS} ${IMAGE}
+all: prepare base build
 
 prepare:
 ifneq ("$(wildcard $(DOCKER_COMPOSE_ENV))","")
@@ -48,6 +47,12 @@ ifneq ("$(wildcard $(DOCKER_COMPOSE_ENV))","")
 else
 	echo "$${DOCKER_COMPOSE_ENV_CONTENT}" > ${DOCKER_COMPOSE_ENV}
 endif
+
+base: prepare
+	${DOCKER_COMPOSE} build ${BUILD_ARGS} base
+
+build: base
+	${DOCKER_COMPOSE} build ${BUILD_ARGS} build
 
 push: prepare
 ifeq ($(YOCTO_REGISTRY), $(LOCAL_YOCTO))
@@ -66,4 +71,4 @@ release: all
 	$(MAKE_DOCKER) push
 	$(MAKE_DOCKER) clean
 
-.PHONY: all prepare push pull clean release
+.PHONY: all prepare base build push pull clean release

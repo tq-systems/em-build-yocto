@@ -1,10 +1,10 @@
 #
-# Image with yocto build scripts
+# Yocto build image with standardized Makefiles and build scripts
 #
 
-ARG BASE_REGISTRY
-ARG BASE_DOCKER_TAG
-FROM ${BASE_REGISTRY}/yocto:${BASE_DOCKER_TAG}
+ARG YOCTO_REGISTRY
+ARG BUILD_TAG
+FROM ${YOCTO_REGISTRY}/base:${BUILD_TAG}
 
 COPY ./docker/usr/local/bin /usr/local/bin
 COPY ./docker/opt/energy-manager /opt/energy-manager

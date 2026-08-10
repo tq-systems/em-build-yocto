@@ -13,7 +13,7 @@ The build system supports multiple machine architectures (`em310`, `em-aarch64`)
 ## Prerequisites
 
 ### System Requirements
-- **Docker** and **docker-compose** for containerized builds
+- **Docker** for containerized builds
 - **Make** for build orchestration
 - **Git** for source code management
 - **Linux host system** (tested on Ubuntu/Debian)
@@ -161,7 +161,7 @@ EOF
 
 ### Building Docker Images
 ```bash
-# Build yocto build image
+# Build yocto images
 make -f docker.mk all
 
 # Push to registry (for CI/CD)
@@ -174,9 +174,9 @@ make -f docker.mk clean
 ### Docker Environment Variables
 ```bash
 # Docker registry settings
-export YOCTO_REGISTRY="registry.example.com/em"
 export BASE_REGISTRY="registry.example.com/em/base"
 export BASE_DOCKER_TAG="latest"
+export YOCTO_REGISTRY="registry.example.com/em/yocto"
 export BUILD_TAG="v1.0.0"
 ```
 

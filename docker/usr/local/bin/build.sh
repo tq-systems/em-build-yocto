@@ -50,7 +50,7 @@ em-build reference: $TQEM_EM_BUILD_REF
 
 # An EULA need to be accepted for the em-aarch64 build
 # shellcheck disable=SC2034
-BB_ENV_PASSTHROUGH_ADDITIONS='ACCEPT_FSL_EULA EM_AARCH64_em-cb30'
+BB_ENV_PASSTHROUGH_ADDITIONS='ACCEPT_FSL_EULA'
 export ACCEPT_FSL_EULA='1'
 
 cd_em_build

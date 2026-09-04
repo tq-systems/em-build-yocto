@@ -1,3 +1,4 @@
 ## [{{ version }}]
 ### Changed
 - base: updated shell-lib
+- eg4xx: add support for new platform, remove deprecated em-cb30

@@ -73,7 +73,7 @@ make deploy
 | Machine      | Architecture  | Description                   |
 |--------------|---------------|-------------------------------|
 | `em310`      | ARM Cortex-A7 | EM310 energy manager          |
-| `em-aarch64` | ARM64         | EM4xx/EM-CB30 energy managers |
+| `em-aarch64` | ARM64         | EM4xx/EG400 energy managers   |
 
 ## Configuration
 
@@ -84,7 +84,8 @@ make deploy
 # Target machines (default: em-aarch64)
 export TQEM_MACHINES="em310 em-aarch64"
 
-# Specific em-aarch64 variant (em4xx or em-cb30)
+# Specific em-aarch64 variant (em4xx or eg4xx),
+# do not set if needed to build both
 export TQEM_EM_AARCH64_MACHINE="em4xx"
 
 # em-build reference (branch/tag)

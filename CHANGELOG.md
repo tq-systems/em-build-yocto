@@ -1,3 +1,13 @@
+## [1.3.0] - 2026-08-10
+### Added
+- docker: yocto base image which is moved from the base project
+  - Install current scarthgap (v5.0.19) dependencies and TQ shell library
+- ci: .yocto-base-image template
+
+### Changed
+- license-clearing: exclude util-linux-libuuid
+- ci: Limit Docker builds to practical scenarios
+
 ## [1.2.1] - 2026-05-22
 ### Changed
 - Update base reference to v3.1.0

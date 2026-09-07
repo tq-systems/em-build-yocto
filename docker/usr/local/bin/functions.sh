@@ -105,26 +105,25 @@ remove_string() {
 }
 
 # The 'em-aarch' machine builds several machine variants for the aarch64 architecture. Build time
-# can be saved by deactivating the unused variants. As the 'EM_AARCH64_em-cb30' string is not
-# compatible with the bash, it cannot be deactivated by using the BB_ENV_PASSTHROUGH_ADDITIONS.
-# As a workaround we adjust the local.conf reading the TQEM_EM_AARCH64_MACHINE variable.
+# can be saved by deactivating the unused variants. We adjust the local.conf reading the
+# TQEM_EM_AARCH64_MACHINE variable.
 adjust_local_conf_machine() {
-	local deactivate_em_cb30="EM_AARCH64_em-cb30 = \"0\""
+	local deactivate_eg4xx="EM_AARCH64_eg4xx = \"0\""
 	local deactivate_em4xx="EM_AARCH64_em4xx = \"0\""
 
 	[ -f "$TQEM_YOCTO_LOCAL_CONF" ] || tqem_log_error_and_exit "Cannot find local.conf"
 	case $TQEM_EM_AARCH64_MACHINE in
-	em4xx)
-		add_string "$deactivate_em_cb30"
-		remove_string "$deactivate_em4xx"
-		;;
-	em-cb30)
+	eg4xx)
 		add_string "$deactivate_em4xx"
-		remove_string "$deactivate_em_cb30"
+		remove_string "$deactivate_eg4xx"
+		;;
+	em4xx)
+		add_string "$deactivate_eg4xx"
+		remove_string "$deactivate_em4xx"
 		;;
 	*)
 		remove_string "$deactivate_em4xx"
-		remove_string "$deactivate_em_cb30"
+		remove_string "$deactivate_eg4xx"
 		;;
 	esac
 }

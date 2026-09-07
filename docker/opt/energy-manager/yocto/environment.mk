@@ -1,10 +1,6 @@
 # The default machine is 'em-aarch64', multi-machine builds are maintained in the CI
 export TQEM_MACHINES ?= em-aarch64
 
-# The build time of the em-aarch64 machine can be reduced by setting the explicit
-# em-aarch64 machine (em4xx or em-cb30)
-export TQEM_EM_AARCH64_MACHINE ?= em4xx
-
 # em-build git repository
 export TQEM_EM_BUILD_GIT_REPO ?= https://github.com/tq-systems/em-build.git
 

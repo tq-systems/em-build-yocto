@@ -1,9 +1,4 @@
 ## [{{ version }}]
-### Added
-- docker: yocto base image which is moved from the base project
-  - Install current scarthgap (v5.0.19) dependencies and TQ shell library
-- ci: .yocto-base-image template
-
 ### Changed
-- license-clearing: exclude util-linux-libuuid
-- ci: Limit Docker builds to practical scenarios
+- base: updated shell-lib
+- eg4xx: add support for new platform, remove deprecated em-cb30

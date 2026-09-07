@@ -20,7 +20,7 @@ RUN apt-get update && apt-get --yes upgrade && apt-get install --yes \
 RUN locale-gen "en_US.UTF-8"
 
 # install the TQ-EM shell library
-ENV LIB_SHELL_VERSION=2.0.0
+ENV LIB_SHELL_VERSION=2.1.0
 RUN git clone https://github.com/tq-systems/em-lib-shell /tmp/libshell \
 	&& git -C /tmp/libshell checkout v${LIB_SHELL_VERSION} \
 	&& make -C /tmp/libshell install && rm -rf /tmp/libshell

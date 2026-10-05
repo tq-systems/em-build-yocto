@@ -1,3 +1,8 @@
+## [1.4.0] - 2026-10-05
+### Changed
+- base: updated shell-lib to 2.1.1
+- eg4xx: add support for new platform, remove deprecated em-cb30
+
 ## [1.3.0] - 2026-08-10
 ### Added
 - docker: yocto base image which is moved from the base project

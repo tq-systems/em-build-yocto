@@ -1,4 +1,8 @@
 ## [{{ version }}]
+### Added
+- yocto: make target sbom builds the core image with SBOM and CVE list
+- yocto: every core image build deploys the SBOM next to the core image
+
 ### Changed
 - base: updated shell-lib to 2.1.1
 - eg4xx: add support for new platform, remove deprecated em-cb30

@@ -9,6 +9,10 @@ all: prepare
 	$(BUILD_SCRIPT) core-image
 	$(BUILD_SCRIPT) toolchain
 
+# Core image with SBOM and CVE list, not part of 'all' as the archiver extends the build time
+sbom: prepare
+	$(RELEASE_SCRIPT) sbom
+
 prepare: enable-clean-up
 	$(EXEC_CLEAN_ARTIFACTS)
 	$(PREPARE_SCRIPT)
@@ -73,6 +77,6 @@ clean-build:
 clean:
 	$(EXEC_CLEAN_FULL)
 
-.PHONY: all prepare build snapshot-deploy \
+.PHONY: all sbom prepare build snapshot-deploy \
 	release-prepare release release-deploy release-test \
 	enable-clean-up clean-build clean-artifacts clean

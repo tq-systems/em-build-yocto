@@ -13,6 +13,7 @@ if [ $# -ne 1 ] && [ $# -ne 2 ]; then
 commands:
     build         - run build steps only
     collect       - run collect steps only
+    sbom          - build the core image with SBOM and CVE list, collect both
     test [step]   - run single step only
 "
 fi
@@ -196,6 +197,11 @@ collect)
     collect_core
     collect_core_image_sbom
     collect_core_image_spdx
+    collect_core_image_cve
+    ;;
+sbom)
+    build_core_image_cve_sbom
+    collect_core_image_sbom
     collect_core_image_cve
     ;;
 mirror)

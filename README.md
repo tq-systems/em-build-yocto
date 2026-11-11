@@ -53,7 +53,8 @@ make deploy
 
 | Target                  | Description                             |
 |-------------------------|-----------------------------------------|
-| `all`                   | Build both core image and toolchain     |
+| `all`                   | Build core image with SBOM and toolchain |
+| `sbom`                  | Build core image with SBOM and CVE list  |
 | `prepare`               | Fetch and prepare em-build repository   |
 | `build TARGET=<target>` | Build specific target                   |
 | `deploy`                | Deploy artifacts to configured location |
@@ -255,7 +256,14 @@ make release
 ```
 artifacts/core-image/<machine>/
 ├── em-image-core-<machine>.tar          # Root filesystem
-└── em-image-core-<machine>.bootloader.tar  # Bootloader files
+├── em-image-core-<machine>.bootloader.tar  # Bootloader files
+└── em-image-core-<machine>.sbom-cyclonedx[_merged].json  # SBOM
+```
+
+### CVE List (only with `make sbom`)
+```
+sources/cve-list/
+└── em-image-core-<machine>.cve.json
 ```
 
 ### Toolchain Artifacts

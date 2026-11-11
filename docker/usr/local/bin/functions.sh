@@ -192,11 +192,29 @@ fill-dl-cache() {
 	fi
 }
 
+# Multiconfig builds export the SBOM components of each multiconfig separately. They are merged
+# into em-image-core-<machine>.sbom-cyclonedx_merged.json next to the SBOM of the machine image.
+merge_core_image_sbom() {
+	local machine="$1"
+	local multiconfigs="$2"
+	local mc mc_boms="" machine_bom
+
+	for mc in $multiconfigs; do
+		mc_boms="${mc_boms} $(find "${TQEM_YOCTO_TMP_PATH}-${mc}/deploy/cyclonedx-export" -name "*.json")"
+	done
+	machine_bom=$(find "$TQEM_YOCTO_DEPLOY_PATH" -name "em-image-core-${machine}.sbom-cyclonedx.json")
+	# shellcheck disable=SC2086
+	jq -s '.[0].components=([.[].components]|flatten|unique_by(.cpe)|sort_by(.cpe))|.[0]' "$machine_bom" $mc_boms \
+		> "$(dirname "$machine_bom")/$(basename "$machine_bom" .json)_merged.json"
+}
+
 build_core_cve_sbom() {
 	export BB_ENV_PASSTHROUGH_ADDITIONS='ACCEPT_FSL_EULA'
 	export ACCEPT_FSL_EULA='1'
 	cd_em_build
 	setup_build_environment
+	setup_local_yocto_conf
+	adjust_local_conf_machine "$TQEM_EM_AARCH64_MACHINE"
 	for MACHINE in $TQEM_MACHINES; do
 		MACHINE="$MACHINE" bitbake \
 		-R "${TQEM_ADD_CONF_PATH}/check-vulnerabilities.conf" \
@@ -209,19 +227,14 @@ build_core_cve_sbom() {
 		if [ -n "$BBMULTICONFIG" ]; then
 			for mc in $BBMULTICONFIG; do
 				mc_cves="${mc_cves} $(find "${TQEM_YOCTO_TMP_PATH}-${mc}/log" -name "cve-summary.json")"
-				mc_boms="${mc_boms} $(find "${TQEM_YOCTO_TMP_PATH}-${mc}/deploy/cyclonedx-export" -name "*.json")"
 			done
 			machine_cves=$(find "${TQEM_YOCTO_TMP_PATH}/log" -name "cve-summary.json")
-			machine_bom=$(find "$TQEM_YOCTO_DEPLOY_PATH" -name "em-image-core-${MACHINE}.sbom-cyclonedx.json")
 			merged_cves="${TQEM_YOCTO_DEPLOY_IMAGES_PATH}/${MACHINE}/em-image-core-${MACHINE}_merged.cve.json"
-			merged_bom="$(dirname "$machine_bom")/$(basename "$machine_bom" .json)_merged.json"
 			# merge multiconfig cves and machine cves
 			# shellcheck disable=SC2086
 			jq -s '.[0].package=([.[].package]|flatten|unique_by(.name)|sort_by(.name))|.[0]' "$machine_cves" $mc_cves > "$merged_cves"
 			ln -srf "$merged_cves" "${TQEM_YOCTO_DEPLOY_IMAGES_PATH}/${MACHINE}/em-image-core-${MACHINE}.cve.json"
-			#merge multiconfig boms and machine bom
-			# shellcheck disable=SC2086
-			jq -s '.[0].components=([.[].components]|flatten|unique_by(.cpe)|sort_by(.cpe))|.[0]' "$machine_bom" $mc_boms > "$merged_bom"
+			merge_core_image_sbom "$MACHINE" "$BBMULTICONFIG"
 		fi
 
 		CORE_IMAGE_PATH="$(find "${TQEM_YOCTO_DEPLOY_IMAGES_PATH}/${MACHINE}" -type l -name "*em-image-core-${MACHINE}.tar")"

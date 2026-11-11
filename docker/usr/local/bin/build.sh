@@ -64,14 +64,22 @@ case $TARGET in
 core-image)
 	for MACHINE in $TQEM_MACHINES; do
 		MACHINE="$MACHINE" bitbake -R "${TQEM_ADD_CONF_PATH}/shallow-tarballs.conf" \
-			em-image-core
+			-R "${TQEM_ADD_CONF_PATH}/sbom.conf" em-image-core
 
 		CORE_IMAGE_PATH="$(find "$TQEM_YOCTO_DEPLOY_IMAGES_PATH/$MACHINE" -type l -name "*em-image-core-${MACHINE}.tar")"
 		CORE_IMAGE_DEPLOY_PATH="$TQEM_DEPLOY_PATH/core-image/$MACHINE"
+		CORE_IMAGE_SBOM_PATH="$TQEM_YOCTO_DEPLOY_IMAGES_PATH/$MACHINE/em-image-core-${MACHINE}.sbom-cyclonedx.json"
+
+		BBMULTICONFIG=$(MACHINE=$MACHINE bitbake-getvar --value -q --ignore-undefined BBMULTICONFIG)
+		if [ -n "$BBMULTICONFIG" ]; then
+			merge_core_image_sbom "$MACHINE" "$BBMULTICONFIG"
+			CORE_IMAGE_SBOM_PATH="${CORE_IMAGE_SBOM_PATH%.json}_merged.json"
+		fi
 
 		tqem-copy.sh "$CORE_IMAGE_PATH" "$CORE_IMAGE_DEPLOY_PATH" --links --overwrite
 		tqem-copy.sh "$TQEM_YOCTO_DEPLOY_IMAGES_PATH/$MACHINE/em-image-core-${MACHINE}.bootloader.tar" \
 			"$CORE_IMAGE_DEPLOY_PATH" --links --overwrite
+		tqem-copy.sh "$CORE_IMAGE_SBOM_PATH" "$CORE_IMAGE_DEPLOY_PATH" --overwrite
 	done
 	;;
 toolchain)
